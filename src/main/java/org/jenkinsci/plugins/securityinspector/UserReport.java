@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.model.Computer;
@@ -39,20 +38,20 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 
-public class UserReport extends PermissionReport<User,Boolean> {
+public class UserReport extends PermissionReport<User, Boolean> {
 
     Item job4report;
 
     private UserReport(Item job) {
         this.job4report = job;
     }
-    
+
     @Override
     protected Boolean getEntryReport(User column, Permission item) {
         AuthorizationStrategy strategy = Jenkins.getInstance().getAuthorizationStrategy();
         Boolean result;
-        
-         // Impersonate to check the permission
+
+        // Impersonate to check the permission
         Authentication auth = column.impersonate();
         SecurityContext initialContext = null;
         try {
@@ -65,31 +64,31 @@ public class UserReport extends PermissionReport<User,Boolean> {
         }
         return result;
     }
-    
-     public final void generateReport(Set<User> rows) {
-         Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
-         groups.remove(PermissionGroup.get(Permission.class));
-         groups.remove(PermissionGroup.get(Hudson.class));
-         groups.remove(PermissionGroup.get(Computer.class));
-         groups.remove(PermissionGroup.get(View.class));
-         
-         super.generateReport(rows, groups);
-     }
-    
-     public static UserReport createReport(Set<User> rows, Item job) {
-         UserReport report = new UserReport(job);
-         report.generateReport(rows);
-         return report;
-     }
-     
-     @Override
+
+    public final void generateReport(Set<User> rows) {
+        Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+        groups.remove(PermissionGroup.get(Permission.class));
+        groups.remove(PermissionGroup.get(Hudson.class));
+        groups.remove(PermissionGroup.get(Computer.class));
+        groups.remove(PermissionGroup.get(View.class));
+
+        super.generateReport(rows, groups);
+    }
+
+    public static UserReport createReport(Set<User> rows, Item job) {
+        UserReport report = new UserReport(job);
+        report.generateReport(rows);
+        return report;
+    }
+
+    @Override
     public String getRowColumnHeader() {
         return Messages.UserReport_RowColumnHeader();
     }
 
     @Override
     public String getRowTitle(User row) {
-        return row.getDisplayName();
+        return row.getId();
     }
 
     @Override

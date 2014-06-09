@@ -27,7 +27,10 @@ package org.jenkinsci.plugins.securityinspector;
 import hudson.model.Item;
 import hudson.model.User;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import jenkins.model.Jenkins;
 
 public class SecurityInspectorHelper {
@@ -36,7 +39,9 @@ public class SecurityInspectorHelper {
     }
        
     public Collection<User> getPossibleUsers() {
-        return User.getAll();
+        SortedSet<User> sortedUser = new TreeSet<User>(getComparatorUser());
+        sortedUser.addAll(User.getAll());
+        return sortedUser;
     }
     
     public List<Item> getPossibleJobs() {
@@ -52,6 +57,22 @@ public class SecurityInspectorHelper {
     }
     
     public String getJobName(Item item) {
-        return item != null ? item.getDisplayName() : "*";
+        return item != null ? item.getFullName() : "*";
+    }
+    
+    public Comparator<User> getComparatorUser() {
+        return new Comparator<User>() {
+            public int compare(User o1, User o2) {
+                return o1.getId().compareTo(o2.getId());
+            }
+        };
+    }
+    
+    public Comparator<Item> getComparatorItem() {
+        return new Comparator<Item>() {
+            public int compare(Item o1, Item o2) {
+                return o1.getFullName().compareTo(o2.getFullName());
+            }
+        };
     }
 }

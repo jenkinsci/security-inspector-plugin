@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Extension;
+import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -38,6 +39,7 @@ import hudson.model.User;
 import hudson.model.View;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,6 +69,11 @@ public class SecurityInspectorAction extends ManagementLink {
     @Override
     public String getDisplayName() {
         return "Security Inspector";
+    }
+    
+    @Override
+    public String getDescription() {
+        return "Inspect permissions configured by Jenkins security settings";
     }
 
     @Override
@@ -101,6 +108,7 @@ public class SecurityInspectorAction extends ManagementLink {
         //Set<User> users = new HashSet<User>(User.getAll());
         Set<User> users = getRequestedUsers();
         Item job = getRequestedJob();
+
         UserReport report = UserReport.createReport(users, job);
         return report;
     }
@@ -149,7 +157,7 @@ public class SecurityInspectorAction extends ManagementLink {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         String selectedUser = req.getParameter("selectedUser");
         StringBuilder b = new StringBuilder();
-        
+
         UserSubmit action = UserSubmit.fromRequest(req);
 
         switch (action) {
@@ -210,24 +218,44 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        rsp.sendRedirect(".");
+        GoHome action = GoHome.fromRequest(req);
+        switch (action) {
+            case GoToJF:
+                rsp.sendRedirect("job-filter");
+                break;
+            case GoToSF:
+                rsp.sendRedirect("slave-filter");
+                break;
+            case GoToUF:
+                rsp.sendRedirect("user-filter");
+                break;
+                default:
+                throw new IOException("Action " + action + " is not supported");
+        }
+                
     }
 
     public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
         String[] jobNames = Stapler.getCurrentRequest().getParameterValues("job");
+        Set<Job> res;
         if (jobNames == null) {
-            throw HttpResponses.error(404, "'job' has not been specified");
-        }
-
-        Set<Job> res = new HashSet<Job>(jobNames.length);
-        for (String jobName : jobNames) {
-            TopLevelItem item = Jenkins.getInstance().getItem(jobName);
-            if (item != null && item instanceof Job) {
-                res.add((Job) item);
-            } else {
-                throw HttpResponses.error(404, "Cannot get item by name: " + jobName);
+            List<AbstractProject> items = Jenkins.getInstance().getAllItems(AbstractProject.class);
+            res = new HashSet<Job>(items.size());
+            for (AbstractProject item : items) {
+                if (item != null && item instanceof TopLevelItem) {
+                    res.add(item);
+                }
             }
-
+        } else {
+            res = new HashSet<Job>(jobNames.length);
+            for (String jobName : jobNames) {
+                TopLevelItem item = Jenkins.getInstance().getItem(jobName);
+                if (item != null && item instanceof Job) {
+                    res.add((Job) item);
+                }/* else {
+                    throw HttpResponses.error(404, "Cannot get item by name: " + jobName);
+                }*/
+            }
         }
         return res;
     }
@@ -258,17 +286,22 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
         String[] slaveNames = Stapler.getCurrentRequest().getParameterValues("slave");
+        Set<Computer> res;
         if (slaveNames == null) {
-            throw HttpResponses.error(404, "'slave' has not been specified");
-        }
-
-        Set<Computer> res = new HashSet<Computer>(slaveNames.length);
-        for (String slaveName : slaveNames) {
-            Computer item = Jenkins.getInstance().getComputer(slaveName);
-            if (item != null && item instanceof Computer) {
+            Computer[] items = Jenkins.getInstance().getComputers();
+            res = new HashSet<Computer>(items.length);
+            for (Computer item : items) {
                 res.add((Computer) item);
-            } else {
-                throw HttpResponses.error(404, "Cannot get item by name: " + slaveName);
+            }
+        } else {
+            res = new HashSet<Computer>(slaveNames.length);
+            for (String slaveName : slaveNames) {
+                Computer item = Jenkins.getInstance().getComputer(slaveName);
+                if (item != null && item instanceof Computer) {
+                    res.add((Computer) item);
+                }/*else {
+                    throw HttpResponses.error(404, "Cannot get item by name: " + slaveName);
+                }*/
             }
         }
         return res;
@@ -276,25 +309,27 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
         String[] userNames = Stapler.getCurrentRequest().getParameterValues("user");
+        Set<User> res;
         if (userNames == null) {
-            throw HttpResponses.error(404, "'user' has not been specified");
-        }
-
-        Set<User> res = new HashSet<User>(userNames.length);
-        for (String userName : userNames) {
-            User item = User.get(userName, false, null);
-            if (item != null && item instanceof User) {
+            Collection<User> items = User.getAll();
+            res = new HashSet<User>(items.size());
+            for (User item : items) {
                 res.add((User) item);
-            } else {
-                throw HttpResponses.error(404, "Cannot get item by name: " + userName);
+            }
+        } else {
+            res = new HashSet<User>(userNames.length);
+            for (String userName : userNames) {
+                User item = User.get(userName, false, null);
+                if (item != null && item instanceof User) {
+                    res.add((User) item);
+                }/* else {
+                    throw HttpResponses.error(404, "Cannot get item by name: " + userName);
+                }*/
             }
         }
         return res;
     }
 
-    /**
-     * Defines actions inside Search pane
-     */
     enum UserSubmit {
 
         Submit4jobs,
@@ -310,5 +345,21 @@ public class SecurityInspectorAction extends ManagementLink {
             throw new IOException("Cannot find an action in the reqest");
         }
     }
+    
+    enum GoHome {
 
+        GoToJF,
+        GoToSF,
+        GoToUF;
+
+        static GoHome fromRequest(StaplerRequest req) throws IOException {
+            Map map = req.getParameterMap();
+            for (GoHome val : GoHome.values()) {
+                if (map.containsKey(val.toString())) {
+                    return val;
+                }
+            }
+            throw new IOException("Cannot find an action in the reqest");
+        }
+    }
 }

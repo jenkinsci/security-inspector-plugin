@@ -26,7 +26,11 @@ package org.jenkinsci.plugins.securityinspector;
 
 import java.util.Set;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.apache.commons.collections.map.MultiKeyMap;
 
 public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, TEntryReport> {
@@ -59,7 +63,9 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     public final void generateReport(Set<TRow> rows, Set<TColumnItem> columns, Set<TColumnGroup> groups) {
         this.entries = new MultiKeyMap();
         this.groups = new HashSet<TColumnGroup>(groups);
-        this.rows = rows;
+        SortedSet<TRow> sortedRow = new TreeSet<TRow>(getComparator());
+        sortedRow.addAll(rows);
+        this.rows = sortedRow;
         this.columns = columns;
         
         for (TRow row : rows) {
@@ -69,13 +75,21 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
         }
     }
     
+    public Comparator<TRow> getComparator() {
+        return new Comparator<TRow>() {
+            public int compare(TRow o1, TRow o2) {
+                return getRowTitle(o1).compareTo(getRowTitle(o2));
+            }
+        };
+    }
+    
     public abstract TColumnGroup getGroupOfItem(TColumnItem item);
     public abstract Collection<TColumnItem> getItemsOfGroup(TColumnGroup group);
     protected abstract TEntryReport getEntryReport(TRow row, TColumnItem item);
     
     // Layout management
     public abstract String getRowColumnHeader();
-    public abstract String getRowTitle(TRow row);
+    public abstract @Nonnull String getRowTitle(TRow row);
     public abstract String getGroupTitle(TColumnGroup group);
     public abstract String getColumnTitle(TColumnItem item);
     public abstract boolean isEntryReportOk(TRow row, TColumnItem item, TEntryReport report);

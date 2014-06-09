@@ -98,18 +98,18 @@ public class JobFilter {
             includeRegex = null;
             includePattern = null;
         }
-  
+       
         if (jobFilters == null) {
             jobFilters = new LinkedList<ViewJobFilter>();
         }
-                
+              
         List<ViewJobFilter> items = new ArrayList<ViewJobFilter>();
         Object formData = req.getSubmittedForm().get("jobFilters");
         Collection<? extends Descriptor<ViewJobFilter>> descriptors = ViewJobFilter.all();
 
-        if (formData!=null) {
+        if (formData != null) {
             for (Object o : JSONArray.fromObject(formData)) {
-                JSONObject jo = (JSONObject)o;
+                JSONObject jo = (JSONObject) o;
                 String kind = jo.getString("kind");
                 Descriptor<ViewJobFilter> d = find(descriptors, kind);
                 if (d != null) {
@@ -120,6 +120,7 @@ public class JobFilter {
        
         String filter = Util.fixEmpty(req.getParameter("statusFilter"));
         statusFilter = filter != null ? "1".equals(filter) : null;
+        jobFilters = items;
     }
   
     public List<TopLevelItem> doFilter(List<TopLevelItem> input, View view) {
@@ -129,15 +130,20 @@ public class JobFilter {
             names = new TreeSet<String>();
         }
         
-        for (Item item : view.getOwnerItemGroup().getItems()) {
-            String itemName = item.getName();
-            
-            if (includePattern == null) {
-               names.add(itemName); 
+        
+        if (includePattern != null) {
+            for (Item item : view.getOwnerItemGroup().getItems()) {
+                String itemName = item.getName();
+
+                if (includePattern.matcher(itemName).matches()) {
+                    names.add(itemName);
+                } 
             }
-            else if (includePattern.matcher(itemName).matches()) {
+        } else { 
+            for (Item item : view.getOwnerItemGroup().getItems()) {
+                String itemName = item.getName();
                 names.add(itemName);
-            } 
+            }
         }
   
         Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update

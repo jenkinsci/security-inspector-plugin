@@ -66,7 +66,7 @@ public class JobReport extends PermissionReport<Job,Boolean> {
 
     @Override
     public String getRowTitle(Job row) {
-        return row.getDisplayName();
+        return row.getFullDisplayName();
     }
 
     @Override

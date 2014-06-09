@@ -85,20 +85,12 @@ public class UserFilter {
     }
     
     public List<User> doFilter() {
-        SortedSet<String> names;
-
-        synchronized (this) {
-            names = new TreeSet<String>();
-        }
-        
-        for (User item : User.getAll()) {
-            String itemName = item.getFullName();
-            
-            if (includePattern4User == null) {
-               names.add(itemName); 
-            }
-            else if (includePattern4User.matcher(itemName).matches()) {
-                names.add(itemName);
+        SortedSet<String> names = new TreeSet<String>();
+    
+        for (User user : User.getAll()) {
+            String userId = user.getId();
+            if (includePattern4User != null && includePattern4User.matcher(userId).matches()) {
+                names.add(userId);
             } 
         }
   
@@ -110,8 +102,7 @@ public class UserFilter {
             if(item!=null && (localStatusFilter == null)) {
                 items.add(item);
             }
-        }
-        
+        }      
         return items;
     }
   
