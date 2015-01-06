@@ -25,6 +25,7 @@
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Computer;
@@ -37,6 +38,7 @@ import hudson.model.Node;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
@@ -45,6 +47,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -190,19 +194,25 @@ public class SecurityInspectorAction extends ManagementLink {
     public void doJobSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
         String selectedJobs = req.getParameter("selectedJobs");
+        String valid = req.getParameter("_.includeRegex4User");
+        try {
+            Pattern.compile(valid);
+            StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
 
-        StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
+            UserFilter filter4user = new UserFilter(req);
+            List<User> selectedUsers = filter4user.doFilter();
 
-        UserFilter filter4user = new UserFilter(req);
-        List<User> selectedUsers = filter4user.doFilter();
+            for (User item : selectedUsers) {
+                b.append("&user=").append(item.getDisplayName());
+            }
 
-        for (User item : selectedUsers) {
-            b.append("&user=").append(item.getDisplayName());
+            String request = b.toString();
+            rsp.sendRedirect(request);
+        } catch (PatternSyntaxException exception) {
+            String error = exception.getDescription();
+            String backURL = "user-filter";
+            rsp.sendRedirect("error");
         }
-
-        // Redirect to the search report page
-        String request = b.toString();
-        rsp.sendRedirect(request);
     }
 
     public List<Item> doAutoCompleteJob(@QueryParameter String value) {
@@ -252,9 +262,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 TopLevelItem item = Jenkins.getInstance().getItem(jobName);
                 if (item != null && item instanceof Job) {
                     res.add((Job) item);
-                }/* else {
-                    throw HttpResponses.error(404, "Cannot get item by name: " + jobName);
-                }*/
+                }
             }
         }
         return res;
@@ -299,9 +307,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 Computer item = Jenkins.getInstance().getComputer(slaveName);
                 if (item != null && item instanceof Computer) {
                     res.add((Computer) item);
-                }/*else {
-                    throw HttpResponses.error(404, "Cannot get item by name: " + slaveName);
-                }*/
+                }
             }
         }
         return res;
@@ -322,9 +328,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 User item = User.get(userName, false, null);
                 if (item != null && item instanceof User) {
                     res.add((User) item);
-                }/* else {
-                    throw HttpResponses.error(404, "Cannot get item by name: " + userName);
-                }*/
+                }
             }
         }
         return res;

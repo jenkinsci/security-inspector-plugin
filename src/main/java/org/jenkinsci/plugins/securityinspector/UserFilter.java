@@ -27,12 +27,14 @@ package org.jenkinsci.plugins.securityinspector;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.User;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -77,7 +79,11 @@ public class UserFilter {
             if (includeRegex4User == null)
                 includePattern4User = null;
             else
-                includePattern4User = Pattern.compile(includeRegex4User);
+                try {
+                    includePattern4User = Pattern.compile(includeRegex4User);
+                } catch (PatternSyntaxException exception) {
+                    FormValidation.error(exception.getDescription());
+        }
         } else {
             includeRegex4User = null;
             includePattern4User = null;
