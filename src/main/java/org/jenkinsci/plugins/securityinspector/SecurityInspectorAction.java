@@ -25,7 +25,6 @@
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Extension;
-import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Computer;
@@ -38,7 +37,6 @@ import hudson.model.Node;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
@@ -173,18 +171,20 @@ public class SecurityInspectorAction extends ManagementLink {
                 b.append("search_report_user_4_job?user=").append(selectedUser);
                 View sourceView = getSourceView();
                 JobFilter filters = new JobFilter(req, sourceView);
-                List<TopLevelItem> selectedJobs = filters.doFilter(Jenkins.getInstance().getItems(), sourceView);
-                for (TopLevelItem item : selectedJobs) {
-                    b.append("&job=").append(item.getName());
-                }
+                updateSearchCache(filters, null, null);
+                //List<TopLevelItem> selectedJobs = filters.doFilter(Jenkins.getInstance().getItems(), sourceView);
+                //for (TopLevelItem item : selectedJobs) {
+                //    b.append("&job=").append(item.getName());
+                //}
                 break;
             case Submit4slaves:
                 b.append("search_report_user_4_slave?user=").append(selectedUser);
                 SlaveFilter filter4slave = new SlaveFilter(req);
-                List<Computer> selectedSlaves = filter4slave.doFilter();
-                for (Computer item : selectedSlaves) {
-                    b.append("&slave=").append(item.getName());
-                }
+                updateSearchCache(null, filter4slave, null);
+                //List<Computer> selectedSlaves = filter4slave.doFilter();
+                //for (Computer item : selectedSlaves) {
+                //    b.append("&slave=").append(item.getName());
+                //}
                 break;
             default:
                 throw new IOException("Action " + action + " is not supported");
@@ -204,11 +204,12 @@ public class SecurityInspectorAction extends ManagementLink {
             StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
 
             UserFilter filter4user = new UserFilter(req);
-            List<User> selectedUsers = filter4user.doFilter();
+            updateSearchCache(null, null, filter4user);
+            //List<User> selectedUsers = filter4user.doFilter();
 
-            for (User item : selectedUsers) {
-                b.append("&user=").append(item.getDisplayName());
-            }
+            //for (User item : selectedUsers) {
+            //    b.append("&user=").append(item.getDisplayName());
+            //}
 
             String request = b.toString();
             rsp.sendRedirect(request);
@@ -396,9 +397,9 @@ public class SecurityInspectorAction extends ManagementLink {
         return sessionId;
     }
     
-    public void updateSearchCache(JobFilter filter) {
+    public void updateSearchCache(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
         // Put Context to the map
-        contextMap.put(getSessionId(), new UserContext(filter));
+        contextMap.put(getSessionId(), new UserContext(jobFilter, slaveFilter, userFilter));
     }
 
 }

@@ -35,14 +35,25 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 class UserContext {
   
-  private final JobFilter filtersConfig;
+  private final JobFilter jobFilter;
+  private final SlaveFilter slaveFilter;
+  private final UserFilter userFilter;
     
-    public UserContext( @Nonnull JobFilter filtersConfig) {
-        this.filtersConfig = filtersConfig;
+    public UserContext(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
+        this.jobFilter = jobFilter;
+        this.slaveFilter = slaveFilter;
+        this.userFilter = userFilter;
     }
 
-    @Nonnull
-    public JobFilter getFiltersConfig() {
-        return filtersConfig;
+    public JobFilter getJobFilter() {
+        return jobFilter;
+    }
+    
+    public SlaveFilter getSlaveFilter() {
+        return slaveFilter;
+    }
+    
+    public UserFilter getUserFilter() {
+        return userFilter;
     }
 }
