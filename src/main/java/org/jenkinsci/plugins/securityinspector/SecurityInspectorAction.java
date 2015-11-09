@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
@@ -64,6 +65,9 @@ import org.kohsuke.stapler.QueryParameter;
 public class SecurityInspectorAction extends ManagementLink {
 
     private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
+    
+    @Nonnull
+    transient UserContextCache contextMap;
 
     @Override
     public String getIconFileName() {
@@ -88,7 +92,7 @@ public class SecurityInspectorAction extends ManagementLink {
     public SecurityInspectorHelper getHelper() {
         return helper;
     }
-
+    
     public SecurityInspectorReport getReportJob() {
         Set<Job> items = getRequestedJobs();
         User user = getRequestedUser();
@@ -366,4 +370,35 @@ public class SecurityInspectorAction extends ManagementLink {
             throw new IOException("Cannot find an action in the reqest");
         }
     }
+    
+        /**
+     * Gets identifier of the current session.
+     * @return Unique id of the current session.
+     */
+    public static String getSessionId() {
+        return Stapler.getCurrentRequest().getSession().getId(); 
+    }
+    
+    public boolean hasConfiguredFilters() {
+        return contextMap.containsKey(getSessionId());
+    }
+    
+    /**
+     * Cleans internal cache of JSON Objects for the session.
+     * @todo Cleanup approach, replace for URL-based parameterization
+     * @return Current Session Id
+     */
+    public String cleanCache() {
+        final String sessionId = getSessionId();
+        contextMap.flush(sessionId);
+        
+        //TODO: garbage collector       
+        return sessionId;
+    }
+    
+    public void updateSearchCache(JobFilter filter) {
+        // Put Context to the map
+        contextMap.put(getSessionId(), new UserContext(filter));
+    }
+
 }
