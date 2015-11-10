@@ -64,6 +64,17 @@ public class SecurityInspectorAction extends ManagementLink {
 
     private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
     
+    public SecurityInspectorAction() {
+        this.contextMap = new UserContextCache();
+    } 
+    
+    protected Object readResolve() {
+        if (contextMap == null) {
+            contextMap = new UserContextCache();
+        }
+        return this;
+    }
+    
     @Nonnull
     transient UserContextCache contextMap;
 
@@ -173,18 +184,14 @@ public class SecurityInspectorAction extends ManagementLink {
                 JobFilter filters = new JobFilter(req, sourceView);
                 updateSearchCache(filters, null, null);
                 //List<TopLevelItem> selectedJobs = filters.doFilter(Jenkins.getInstance().getItems(), sourceView);
-                //for (TopLevelItem item : selectedJobs) {
-                //    b.append("&job=").append(item.getName());
-                //}
+
                 break;
             case Submit4slaves:
                 b.append("search_report_user_4_slave?user=").append(selectedUser);
                 SlaveFilter filter4slave = new SlaveFilter(req);
                 updateSearchCache(null, filter4slave, null);
                 //List<Computer> selectedSlaves = filter4slave.doFilter();
-                //for (Computer item : selectedSlaves) {
-                //    b.append("&slave=").append(item.getName());
-                //}
+
                 break;
             default:
                 throw new IOException("Action " + action + " is not supported");
@@ -206,10 +213,6 @@ public class SecurityInspectorAction extends ManagementLink {
             UserFilter filter4user = new UserFilter(req);
             updateSearchCache(null, null, filter4user);
             //List<User> selectedUsers = filter4user.doFilter();
-
-            //for (User item : selectedUsers) {
-            //    b.append("&user=").append(item.getDisplayName());
-            //}
 
             String request = b.toString();
             rsp.sendRedirect(request);
@@ -251,9 +254,10 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
-        String[] jobNames = Stapler.getCurrentRequest().getParameterValues("job");
+      UserContext context = contextMap.get(getSessionId());
+      View sourceView = getSourceView();
         Set<Job> res;
-        if (jobNames == null) {
+        if (context.getJobFilter() == null) {
             List<AbstractProject> items = Jenkins.getInstance().getAllItems(AbstractProject.class);
             res = new HashSet<Job>(items.size());
             for (AbstractProject item : items) {
@@ -262,9 +266,9 @@ public class SecurityInspectorAction extends ManagementLink {
                 }
             }
         } else {
-            res = new HashSet<Job>(jobNames.length);
-            for (String jobName : jobNames) {
-                TopLevelItem item = Jenkins.getInstance().getItem(jobName);
+            List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getItems(), sourceView);
+            res = new HashSet<Job>(selectedJobs.size());
+            for (TopLevelItem item : selectedJobs) {
                 if (item != null && item instanceof Job) {
                     res.add((Job) item);
                 }
@@ -401,5 +405,19 @@ public class SecurityInspectorAction extends ManagementLink {
         // Put Context to the map
         contextMap.put(getSessionId(), new UserContext(jobFilter, slaveFilter, userFilter));
     }
-
+    
+    public JobFilter getJobFilter() {
+        UserContext context = contextMap.get(getSessionId());
+        return context.getJobFilter();
+    }
+    
+    public SlaveFilter getSlaveFilter() {
+        UserContext context = contextMap.get(getSessionId());
+        return context.getSlaveFilter();
+    }
+    
+    public UserFilter getUserFilter() {
+        UserContext context = contextMap.get(getSessionId());
+        return context.getUserFilter();
+    }
 }
