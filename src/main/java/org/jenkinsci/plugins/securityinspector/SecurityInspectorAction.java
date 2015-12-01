@@ -25,7 +25,6 @@
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -39,7 +38,6 @@ import hudson.model.User;
 import hudson.model.View;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -117,7 +115,6 @@ public class SecurityInspectorAction extends ManagementLink {
           return new JobReport();
         }
         
-        //Authentication auth = user.impersonate();
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -152,15 +149,13 @@ public class SecurityInspectorAction extends ManagementLink {
         SlaveReport report;
 
         // Impersonate to check the permission
-        
         final Authentication auth;
         try {
           auth = user.impersonate();
         } catch (UsernameNotFoundException ex) {
           return new SlaveReport();
         }
-        
-        //Authentication auth = user.impersonate();
+
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -259,26 +254,16 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
-      UserContext context = contextMap.get(getSessionId());
-      View sourceView = getSourceView();
+        UserContext context = contextMap.get(getSessionId());
+        View sourceView = getSourceView();
         Set<Job> res;
-        /*if (context.getJobFilter() == null) {
-            List<AbstractProject> items = Jenkins.getInstance().getAllItems(AbstractProject.class);
-            res = new HashSet<Job>(items.size());
-            for (AbstractProject item : items) {
-                if (item != null && item instanceof TopLevelItem) {
-                    res.add(item);
-                }
+        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getItems(), sourceView);
+        res = new HashSet<Job>(selectedJobs.size());
+        for (TopLevelItem item : selectedJobs) {
+            if (item != null && item instanceof Job) {
+                res.add((Job) item);
             }
-        } else { */
-            List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getItems(), sourceView);
-            res = new HashSet<Job>(selectedJobs.size());
-            for (TopLevelItem item : selectedJobs) {
-                if (item != null && item instanceof Job) {
-                    res.add((Job) item);
-                }
-            }
-        //}
+        }
         return res;
     }
 
@@ -309,47 +294,26 @@ public class SecurityInspectorAction extends ManagementLink {
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         Set<Computer> res;
-        /*if (context.getSlaveFilter() == null) {
-            Computer[] items = Jenkins.getInstance().getComputers();
-            res = new HashSet<Computer>(items.length);
-            for (Computer item : items) {
-              if (item != null && item instanceof Computer) {
-                    res.add(item);
-                }
+        List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
+        res = new HashSet<Computer>(selectedSlaves.size());
+        for (Computer item : selectedSlaves) {
+            if (item != null && item instanceof Computer) {
+                res.add((Computer) item);
             }
-        } else { */
-            List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
-            res = new HashSet<Computer>(selectedSlaves.size());
-            for (Computer item : selectedSlaves) {
-                if (item != null && item instanceof Computer) {
-                    res.add((Computer) item);
-                }
-            }
-        //}
+        }
         return res;
     }
 
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         Set<User> res;
-        /*if (context.getUserFilter() == null) {
-            Collection<User> items = User.getAll();
-            res = new HashSet<User>(items.size());
-            for (User item : items) {
-                if (item != null && item instanceof User) {
-                    res.add(item);
-                }
+        List<User> selectedUsers = context.getUserFilter().doFilter();
+        res = new HashSet<User>(selectedUsers.size());
+        for (User item : selectedUsers) {
+            if (item != null && item instanceof User) {
+                res.add((User) item);
             }
-        } else { */
-            List<User> selectedUsers = context.getUserFilter().doFilter();
-            res = new HashSet<User>(selectedUsers.size());
-            for (User item : selectedUsers) {
-                //User item = User.get(userName, false, null);
-                if (item != null && item instanceof User) {
-                    res.add((User) item);
-                }
-            }
-        //}
+        }
         return res;
     }
 
@@ -386,7 +350,7 @@ public class SecurityInspectorAction extends ManagementLink {
         }
     }
     
-        /**
+    /**
      * Gets identifier of the current session.
      * @return Unique id of the current session.
      */
