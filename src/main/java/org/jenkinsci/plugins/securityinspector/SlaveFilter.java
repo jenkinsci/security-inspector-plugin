@@ -95,7 +95,9 @@ public class SlaveFilter {
         for (Computer item : Jenkins.getInstance().getComputers()) {
             String itemName = item.getName();
             
-            if (includePattern4Slave != null && includePattern4Slave.matcher(itemName).matches()) {
+            if (includePattern4Slave == null) {
+                names.add(itemName);
+            } else if (includePattern4Slave.matcher(itemName).matches()) {
                 names.add(itemName);
             } 
         }

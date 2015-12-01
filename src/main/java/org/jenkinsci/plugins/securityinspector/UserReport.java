@@ -37,6 +37,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 public class UserReport extends PermissionReport<User, Boolean> {
 
@@ -52,7 +53,13 @@ public class UserReport extends PermissionReport<User, Boolean> {
         Boolean result;
 
         // Impersonate to check the permission
-        Authentication auth = column.impersonate();
+        final Authentication auth;
+        try {
+          auth = column.impersonate();
+        } catch (UsernameNotFoundException ex) {
+          return Boolean.FALSE;
+        }
+        
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -95,5 +102,4 @@ public class UserReport extends PermissionReport<User, Boolean> {
     public boolean isEntryReportOk(User row, Permission item, Boolean report) {
         return report != null ? report.booleanValue() : false;
     }
-
 }

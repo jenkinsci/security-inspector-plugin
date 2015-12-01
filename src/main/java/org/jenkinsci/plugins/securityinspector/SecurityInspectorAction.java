@@ -53,6 +53,7 @@ import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -108,7 +109,15 @@ public class SecurityInspectorAction extends ManagementLink {
         JobReport report;
 
         // Impersonate to check the permission
-        Authentication auth = user.impersonate();
+        
+        final Authentication auth;
+        try {
+          auth = user.impersonate();
+        } catch (UsernameNotFoundException ex) {
+          return new JobReport();
+        }
+        
+        //Authentication auth = user.impersonate();
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -122,7 +131,6 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public SecurityInspectorReport getReportUser() {
-        //Set<User> users = new HashSet<User>(User.getAll());
         Set<User> users = getRequestedUsers();
         Item job = getRequestedJob();
 
@@ -131,10 +139,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public SecurityInspectorReport getReportSlave() {
-        //Set<Slave> items = new HashSet<Slave>(Jenkins.getInstance().getAllItems(Slave.class));
-
         Set<Computer> computers = getRequestedSlaves();
-        //Slave slave = Computer::getNode(computers);
         Set<Computer> slaves = new HashSet<Computer>();
         for (Computer c : computers) {
             Node slave = c.getNode();
@@ -147,7 +152,15 @@ public class SecurityInspectorAction extends ManagementLink {
         SlaveReport report;
 
         // Impersonate to check the permission
-        Authentication auth = user.impersonate();
+        
+        final Authentication auth;
+        try {
+          auth = user.impersonate();
+        } catch (UsernameNotFoundException ex) {
+          return new SlaveReport();
+        }
+        
+        //Authentication auth = user.impersonate();
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -183,15 +196,11 @@ public class SecurityInspectorAction extends ManagementLink {
                 View sourceView = getSourceView();
                 JobFilter filters = new JobFilter(req, sourceView);
                 updateSearchCache(filters, null, null);
-                //List<TopLevelItem> selectedJobs = filters.doFilter(Jenkins.getInstance().getItems(), sourceView);
-
                 break;
             case Submit4slaves:
                 b.append("search_report_user_4_slave?user=").append(selectedUser);
                 SlaveFilter filter4slave = new SlaveFilter(req);
                 updateSearchCache(null, filter4slave, null);
-                //List<Computer> selectedSlaves = filter4slave.doFilter();
-
                 break;
             default:
                 throw new IOException("Action " + action + " is not supported");
@@ -209,11 +218,8 @@ public class SecurityInspectorAction extends ManagementLink {
         try {
             Pattern.compile(valid);
             StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
-
             UserFilter filter4user = new UserFilter(req);
             updateSearchCache(null, null, filter4user);
-            //List<User> selectedUsers = filter4user.doFilter();
-
             String request = b.toString();
             rsp.sendRedirect(request);
         } catch (PatternSyntaxException exception) {
@@ -249,15 +255,14 @@ public class SecurityInspectorAction extends ManagementLink {
                 break;
                 default:
                 throw new IOException("Action " + action + " is not supported");
-        }
-                
+        }           
     }
 
     public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
       UserContext context = contextMap.get(getSessionId());
       View sourceView = getSourceView();
         Set<Job> res;
-        if (context.getJobFilter() == null) {
+        /*if (context.getJobFilter() == null) {
             List<AbstractProject> items = Jenkins.getInstance().getAllItems(AbstractProject.class);
             res = new HashSet<Job>(items.size());
             for (AbstractProject item : items) {
@@ -265,7 +270,7 @@ public class SecurityInspectorAction extends ManagementLink {
                     res.add(item);
                 }
             }
-        } else {
+        } else { */
             List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getItems(), sourceView);
             res = new HashSet<Job>(selectedJobs.size());
             for (TopLevelItem item : selectedJobs) {
@@ -273,7 +278,7 @@ public class SecurityInspectorAction extends ManagementLink {
                     res.add((Job) item);
                 }
             }
-        }
+        //}
         return res;
     }
 
@@ -302,44 +307,49 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
-        String[] slaveNames = Stapler.getCurrentRequest().getParameterValues("slave");
+        UserContext context = contextMap.get(getSessionId());
         Set<Computer> res;
-        if (slaveNames == null) {
+        /*if (context.getSlaveFilter() == null) {
             Computer[] items = Jenkins.getInstance().getComputers();
             res = new HashSet<Computer>(items.length);
             for (Computer item : items) {
-                res.add((Computer) item);
+              if (item != null && item instanceof Computer) {
+                    res.add(item);
+                }
             }
-        } else {
-            res = new HashSet<Computer>(slaveNames.length);
-            for (String slaveName : slaveNames) {
-                Computer item = Jenkins.getInstance().getComputer(slaveName);
+        } else { */
+            List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
+            res = new HashSet<Computer>(selectedSlaves.size());
+            for (Computer item : selectedSlaves) {
                 if (item != null && item instanceof Computer) {
                     res.add((Computer) item);
                 }
             }
-        }
+        //}
         return res;
     }
 
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
-        String[] userNames = Stapler.getCurrentRequest().getParameterValues("user");
+        UserContext context = contextMap.get(getSessionId());
         Set<User> res;
-        if (userNames == null) {
+        /*if (context.getUserFilter() == null) {
             Collection<User> items = User.getAll();
             res = new HashSet<User>(items.size());
             for (User item : items) {
-                res.add((User) item);
+                if (item != null && item instanceof User) {
+                    res.add(item);
+                }
             }
-        } else {
-            res = new HashSet<User>(userNames.length);
-            for (String userName : userNames) {
-                User item = User.get(userName, false, null);
+        } else { */
+            List<User> selectedUsers = context.getUserFilter().doFilter();
+            res = new HashSet<User>(selectedUsers.size());
+            for (User item : selectedUsers) {
+                //User item = User.get(userName, false, null);
                 if (item != null && item instanceof User) {
                     res.add((User) item);
                 }
             }
-        }
+        //}
         return res;
     }
 
@@ -395,29 +405,13 @@ public class SecurityInspectorAction extends ManagementLink {
      */
     public String cleanCache() {
         final String sessionId = getSessionId();
-        contextMap.flush(sessionId);
-        
-        //TODO: garbage collector       
+        contextMap.flush(sessionId);      
         return sessionId;
     }
     
     public void updateSearchCache(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
+        cleanCache();
         // Put Context to the map
         contextMap.put(getSessionId(), new UserContext(jobFilter, slaveFilter, userFilter));
-    }
-    
-    public JobFilter getJobFilter() {
-        UserContext context = contextMap.get(getSessionId());
-        return context.getJobFilter();
-    }
-    
-    public SlaveFilter getSlaveFilter() {
-        UserContext context = contextMap.get(getSessionId());
-        return context.getSlaveFilter();
-    }
-    
-    public UserFilter getUserFilter() {
-        UserContext context = contextMap.get(getSessionId());
-        return context.getUserFilter();
     }
 }

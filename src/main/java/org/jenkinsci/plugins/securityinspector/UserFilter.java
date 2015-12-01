@@ -95,7 +95,10 @@ public class UserFilter {
     
         for (User user : User.getAll()) {
             String userId = user.getId();
-            if (includePattern4User != null && includePattern4User.matcher(userId).matches()) {
+            if (includePattern4User == null){
+              names.add(userId);
+            }
+            else if (includePattern4User.matcher(userId).matches()) {
                 names.add(userId);
             } 
         }

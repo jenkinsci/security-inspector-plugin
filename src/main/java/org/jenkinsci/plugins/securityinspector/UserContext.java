@@ -24,7 +24,6 @@
 
 package org.jenkinsci.plugins.securityinspector;
 
-import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
