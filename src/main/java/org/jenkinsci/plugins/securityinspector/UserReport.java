@@ -63,7 +63,7 @@ public class UserReport extends PermissionReport<User, Boolean> {
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
-            result = strategy.getACL(column).hasPermission(item);
+            result = job4report.hasPermission(item);
         } finally {
             if (initialContext != null) {
                 SecurityContextHolder.setContext(initialContext);
