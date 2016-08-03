@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  -->
+ <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout title="${%Security Inspector}" permission="${app.ADMINISTER}">
         <st:include it="${app}" page="sidepanel.jelly"/>
@@ -33,14 +34,19 @@
             <j:set var="_report" value="${it.reportJob}"/>
             
             <f:form method="post" name="config" action="goHome">
-                <h1>${%Security Inspector. Report for user} ${_user.id}</h1> 
+                <h1>${%Security Inspector. Report for user: } ${_user.id}</h1> 
                 
                 <f:block>
                    
                     <!-- Job Report -->
                     <h2>${%Job reports}</h2>
                     <table id="projectPermissions" name="data">
+                      
+                      <j:if test="${_report.groups.size() == null}">
+                        <h3>${%Report is empty}</h3>
+                      </j:if>
 
+                      <j:if test="${_report.groups.size() != null}">
                         <!-- The first row will show grouping -->
                         <tr class="group-row">
                             <td rowspan="2" class="start" />
@@ -86,6 +92,8 @@
                                 <td class="stop" />
                             </tr>                       
                         </j:forEach>
+                        
+                        </j:if>
      
                     </table>
                 </f:block>
