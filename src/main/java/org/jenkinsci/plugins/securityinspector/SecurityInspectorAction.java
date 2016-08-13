@@ -28,7 +28,6 @@ import hudson.Extension;
 import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.ManagementLink;
@@ -36,7 +35,6 @@ import hudson.model.Node;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.security.Permission;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
@@ -181,7 +179,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
         String selectedItem;
         String valid;
         StringBuilder b = new StringBuilder();
@@ -252,7 +250,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
         GoHome action = GoHome.fromRequest(req);
         switch (action) {
             case GoToJF:
