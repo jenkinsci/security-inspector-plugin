@@ -36,6 +36,7 @@ import hudson.model.Node;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
+import hudson.security.Permission;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -178,50 +180,64 @@ public class SecurityInspectorAction extends ManagementLink {
         throw new IllegalStateException("Cannot retrieve All view");
     }
 
-    public void doUserSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+    public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        String selectedUser = req.getParameter("selectedUser");
+        String selectedItem;
+        String valid;
         StringBuilder b = new StringBuilder();
-
         UserSubmit action = UserSubmit.fromRequest(req);
 
         switch (action) {
             case Submit4jobs:
-                b.append("search_report_user_4_job?user=").append(selectedUser);
+                valid = req.getParameter("_.includeRegex");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                }
+                selectedItem = req.getParameter("selectedUser");
+                b.append("search_report_user_4_job?user=").append(selectedItem);
                 View sourceView = getSourceView();
                 JobFilter filters = new JobFilter(req, sourceView);
                 updateSearchCache(filters, null, null);
                 break;
+              
             case Submit4slaves:
-                b.append("search_report_user_4_slave?user=").append(selectedUser);
+                valid = req.getParameter("_.includeRegex4Slave");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                }
+                selectedItem = req.getParameter("selectedUser");
+                b.append("search_report_user_4_slave?user=").append(selectedItem);
                 SlaveFilter filter4slave = new SlaveFilter(req);
                 updateSearchCache(null, filter4slave, null);
                 break;
+              
+            case Submit4user:
+                valid = req.getParameter("_.includeRegex4User");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                }
+                selectedItem = req.getParameter("selectedJobs");
+                b.append("search_report_job?job=").append(selectedItem);
+                UserFilter filter4user = new UserFilter(req);
+                updateSearchCache(null, null, filter4user);
+                break;
+              
+            case GoToHP:
+                return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector");
+              
             default:
                 throw new IOException("Action " + action + " is not supported");
         }
 
         // Redirect to the search report page
         String request = b.toString();
-        rsp.sendRedirect(request);
-    }
-
-    public void doJobSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        String selectedJobs = req.getParameter("selectedJobs");
-        String valid = req.getParameter("_.includeRegex4User");
-        try {
-            Pattern.compile(valid);
-            StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
-            UserFilter filter4user = new UserFilter(req);
-            updateSearchCache(null, null, filter4user);
-            String request = b.toString();
-            rsp.sendRedirect(request);
-        } catch (PatternSyntaxException exception) {
-            String error = exception.getDescription();
-            String backURL = "user-filter";
-            rsp.sendRedirect("error");
-        }
+        return HttpResponses.redirectTo(request);
     }
 
     public List<Item> doAutoCompleteJob(@QueryParameter String value) {
@@ -252,7 +268,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 throw new IOException("Action " + action + " is not supported");
         }           
     }
-
+    
     public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         View sourceView = getSourceView();
@@ -320,7 +336,9 @@ public class SecurityInspectorAction extends ManagementLink {
     enum UserSubmit {
 
         Submit4jobs,
-        Submit4slaves;
+        Submit4slaves,
+        Submit4user,
+        GoToHP;
 
         static UserSubmit fromRequest(StaplerRequest req) throws IOException {
             Map map = req.getParameterMap();

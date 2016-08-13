@@ -28,7 +28,7 @@
         <l:main-panel>
             
             <!-- Job Report -->
-            <f:form method="post" name="config" action="userSubmit">
+            <f:form method="post" name="config" action="filterSubmit">
                 <h1>
                     <img src="${imagesURL}/48x48/${it.iconFileName}" alt="${%Security Inspector}"/>
                     ${%Security Inspector}
@@ -39,7 +39,7 @@
                         <j:set var="_userList"  value="${it.helper.possibleUsers}"/>
                         <select name="selectedUser" class="setting-input">
                             <j:forEach var="user" items="${_userList}">
-                                <f:option value="${user.getId()}" selected="${it.helper.defaultUserId}">
+                                <f:option value="${user.getId()}">
                                     ${it.helper.getDisplayName(user)}
                                 </f:option>
                             </j:forEach>
@@ -73,6 +73,7 @@
                     
                     <f:block>
                         <f:submit name="Submit4jobs" value="${%Submit}" />
+                        <f:submit name="GoToHP" value="${%Back}" />
                     </f:block>
                    
                 </f:section>
