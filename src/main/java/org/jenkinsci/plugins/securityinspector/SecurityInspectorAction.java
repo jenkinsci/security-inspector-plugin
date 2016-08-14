@@ -271,7 +271,7 @@ public class SecurityInspectorAction extends ManagementLink {
         UserContext context = contextMap.get(getSessionId());
         View sourceView = getSourceView();
         Set<Job> res;
-        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getItems(), sourceView);
+        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getAllItems(TopLevelItem.class), sourceView);
         res = new HashSet<Job>(selectedJobs.size());
         for (TopLevelItem item : selectedJobs) {
             if (item != null && item instanceof Job) {

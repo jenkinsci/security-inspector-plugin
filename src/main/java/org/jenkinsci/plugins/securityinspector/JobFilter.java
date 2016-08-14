@@ -28,19 +28,23 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import static hudson.model.Descriptor.find;
+import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.views.ViewJobFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -111,7 +115,7 @@ public class JobFilter {
             for (Object o : JSONArray.fromObject(formData)) {
                 JSONObject jo = (JSONObject) o;
                 String kind = jo.getString("kind");
-                Descriptor<ViewJobFilter> d = find(descriptors, kind);
+                Descriptor<ViewJobFilter> d = findByDescribableClassName(descriptors, kind);
                 if (d != null) {
                     items.add(d.newInstance(req, jo));
                 }
@@ -131,17 +135,28 @@ public class JobFilter {
         }
         
         
+        
+        final List<TopLevelItem> allItems;
+        final Jenkins jenkins;
+        if (view.getOwnerItemGroup() instanceof Jenkins) {
+          final ItemGroup<? extends TopLevelItem> ownerItemGroup = view.getOwnerItemGroup();
+          jenkins = ((Jenkins)ownerItemGroup);
+          allItems = jenkins.getAllItems(TopLevelItem.class);
+        } else {
+          // TODO: Handle folders?
+          return Collections.emptyList();
+        }
+          
         if (includePattern != null) {
-            for (Item item : view.getOwnerItemGroup().getItems()) {
-                String itemName = item.getName();
-
+            for (Item item : allItems) {
+                String itemName = item.getFullName();
                 if (includePattern.matcher(itemName).matches()) {
                     names.add(itemName);
                 } 
             }
         } else { 
-            for (Item item : view.getOwnerItemGroup().getItems()) {
-                String itemName = item.getName();
+            for (Item item : allItems) {
+                String itemName = item.getFullName();
                 names.add(itemName);
             }
         }
@@ -149,7 +164,7 @@ public class JobFilter {
         Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
         List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
         for (String n : names) {
-            TopLevelItem item = view.getOwnerItemGroup().getItem(n);
+            TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
             // Add if no status filter or filter matches enabled/disabled status:
             if(item!=null && (localStatusFilter == null 
                     || !(item instanceof AbstractProject)
@@ -160,8 +175,7 @@ public class JobFilter {
 
         // Check the filters
         Iterable<ViewJobFilter> localJobFilters = getJobFilters();
-        List<TopLevelItem> allItems = new ArrayList<TopLevelItem>(view.getOwnerItemGroup().getItems());
-    	for (ViewJobFilter jobFilter: localJobFilters) {
+        for (ViewJobFilter jobFilter: localJobFilters) {
     		items = jobFilter.filter(items, allItems, view);
         }
         
