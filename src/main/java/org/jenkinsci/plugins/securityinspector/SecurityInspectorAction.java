@@ -29,7 +29,6 @@ import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.Item;
-import hudson.model.Job;
 import hudson.model.ManagementLink;
 import hudson.model.Node;
 import hudson.model.TopLevelItem;
@@ -102,7 +101,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
     
     public SecurityInspectorReport getReportJob() {
-        Set<Job> items = getRequestedJobs();
+        Set<TopLevelItem> items = getRequestedJobs();
         User user = getRequestedUser();
         JobReport report;
 
@@ -267,15 +266,15 @@ public class SecurityInspectorAction extends ManagementLink {
         }           
     }
     
-    public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
+    public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         View sourceView = getSourceView();
-        Set<Job> res;
+        Set<TopLevelItem> res;
         List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getAllItems(TopLevelItem.class), sourceView);
-        res = new HashSet<Job>(selectedJobs.size());
+        res = new HashSet(selectedJobs.size());
         for (TopLevelItem item : selectedJobs) {
-            if (item != null && item instanceof Job) {
-                res.add((Job) item);
+            if (item != null) {
+                res.add(item);
             }
         }
         return res;
