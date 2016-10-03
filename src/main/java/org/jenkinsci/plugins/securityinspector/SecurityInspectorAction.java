@@ -25,23 +25,17 @@
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Extension;
-import hudson.Util;
-import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Job;
 import hudson.model.ManagementLink;
 import hudson.model.Node;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.util.FormValidation;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,11 +43,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -64,6 +61,20 @@ import org.kohsuke.stapler.QueryParameter;
 public class SecurityInspectorAction extends ManagementLink {
 
     private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
+    
+    public SecurityInspectorAction() {
+        this.contextMap = new UserContextCache();
+    } 
+    
+    protected Object readResolve() {
+        if (contextMap == null) {
+            contextMap = new UserContextCache();
+        }
+        return this;
+    }
+    
+    @Nonnull
+    transient UserContextCache contextMap;
 
     @Override
     public String getIconFileName() {
@@ -88,14 +99,21 @@ public class SecurityInspectorAction extends ManagementLink {
     public SecurityInspectorHelper getHelper() {
         return helper;
     }
-
+    
     public SecurityInspectorReport getReportJob() {
-        Set<Job> items = getRequestedJobs();
+        Set<TopLevelItem> items = getRequestedJobs();
         User user = getRequestedUser();
         JobReport report;
 
         // Impersonate to check the permission
-        Authentication auth = user.impersonate();
+        
+        final Authentication auth;
+        try {
+          auth = user.impersonate();
+        } catch (UsernameNotFoundException ex) {
+          return new JobReport();
+        }
+        
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -109,7 +127,6 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public SecurityInspectorReport getReportUser() {
-        //Set<User> users = new HashSet<User>(User.getAll());
         Set<User> users = getRequestedUsers();
         Item job = getRequestedJob();
 
@@ -118,10 +135,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public SecurityInspectorReport getReportSlave() {
-        //Set<Slave> items = new HashSet<Slave>(Jenkins.getInstance().getAllItems(Slave.class));
-
         Set<Computer> computers = getRequestedSlaves();
-        //Slave slave = Computer::getNode(computers);
         Set<Computer> slaves = new HashSet<Computer>();
         for (Computer c : computers) {
             Node slave = c.getNode();
@@ -134,7 +148,13 @@ public class SecurityInspectorAction extends ManagementLink {
         SlaveReport report;
 
         // Impersonate to check the permission
-        Authentication auth = user.impersonate();
+        final Authentication auth;
+        try {
+          auth = user.impersonate();
+        } catch (UsernameNotFoundException ex) {
+          return new SlaveReport();
+        }
+
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -157,62 +177,64 @@ public class SecurityInspectorAction extends ManagementLink {
         throw new IllegalStateException("Cannot retrieve All view");
     }
 
-    public void doUserSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        String selectedUser = req.getParameter("selectedUser");
+    public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+        String selectedItem;
+        String valid;
         StringBuilder b = new StringBuilder();
-
         UserSubmit action = UserSubmit.fromRequest(req);
 
         switch (action) {
             case Submit4jobs:
-                b.append("search_report_user_4_job?user=").append(selectedUser);
+                valid = req.getParameter("_.includeRegex");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                }
+                selectedItem = req.getParameter("selectedUser");
+                b.append("search_report_user_4_job?user=").append(selectedItem);
                 View sourceView = getSourceView();
                 JobFilter filters = new JobFilter(req, sourceView);
-                List<TopLevelItem> selectedJobs = filters.doFilter(Jenkins.getInstance().getItems(), sourceView);
-                for (TopLevelItem item : selectedJobs) {
-                    b.append("&job=").append(item.getName());
-                }
+                updateSearchCache(filters, null, null);
                 break;
+              
             case Submit4slaves:
-                b.append("search_report_user_4_slave?user=").append(selectedUser);
-                SlaveFilter filter4slave = new SlaveFilter(req);
-                List<Computer> selectedSlaves = filter4slave.doFilter();
-                for (Computer item : selectedSlaves) {
-                    b.append("&slave=").append(item.getName());
+                valid = req.getParameter("_.includeRegex4Slave");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
                 }
+                selectedItem = req.getParameter("selectedUser");
+                b.append("search_report_user_4_slave?user=").append(selectedItem);
+                SlaveFilter filter4slave = new SlaveFilter(req);
+                updateSearchCache(null, filter4slave, null);
                 break;
+              
+            case Submit4user:
+                valid = req.getParameter("_.includeRegex4User");
+                try {
+                    Pattern.compile(valid);
+                } catch (PatternSyntaxException exception) {
+                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                }
+                selectedItem = req.getParameter("selectedJobs");
+                b.append("search_report_job?job=").append(selectedItem);
+                UserFilter filter4user = new UserFilter(req);
+                updateSearchCache(null, null, filter4user);
+                break;
+              
+            case GoToHP:
+                return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector");
+              
             default:
                 throw new IOException("Action " + action + " is not supported");
         }
 
         // Redirect to the search report page
         String request = b.toString();
-        rsp.sendRedirect(request);
-    }
-
-    public void doJobSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-        String selectedJobs = req.getParameter("selectedJobs");
-        String valid = req.getParameter("_.includeRegex4User");
-        try {
-            Pattern.compile(valid);
-            StringBuilder b = new StringBuilder("search_report_job?job=" + selectedJobs);
-
-            UserFilter filter4user = new UserFilter(req);
-            List<User> selectedUsers = filter4user.doFilter();
-
-            for (User item : selectedUsers) {
-                b.append("&user=").append(item.getDisplayName());
-            }
-
-            String request = b.toString();
-            rsp.sendRedirect(request);
-        } catch (PatternSyntaxException exception) {
-            String error = exception.getDescription();
-            String backURL = "user-filter";
-            rsp.sendRedirect("error");
-        }
+        return HttpResponses.redirectTo(request);
     }
 
     public List<Item> doAutoCompleteJob(@QueryParameter String value) {
@@ -227,7 +249,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
         GoHome action = GoHome.fromRequest(req);
         switch (action) {
             case GoToJF:
@@ -241,28 +263,18 @@ public class SecurityInspectorAction extends ManagementLink {
                 break;
                 default:
                 throw new IOException("Action " + action + " is not supported");
-        }
-                
+        }           
     }
-
-    public Set<Job> getRequestedJobs() throws HttpResponses.HttpResponseException {
-        String[] jobNames = Stapler.getCurrentRequest().getParameterValues("job");
-        Set<Job> res;
-        if (jobNames == null) {
-            List<AbstractProject> items = Jenkins.getInstance().getAllItems(AbstractProject.class);
-            res = new HashSet<Job>(items.size());
-            for (AbstractProject item : items) {
-                if (item != null && item instanceof TopLevelItem) {
-                    res.add(item);
-                }
-            }
-        } else {
-            res = new HashSet<Job>(jobNames.length);
-            for (String jobName : jobNames) {
-                TopLevelItem item = Jenkins.getInstance().getItem(jobName);
-                if (item != null && item instanceof Job) {
-                    res.add((Job) item);
-                }
+    
+    public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
+        UserContext context = contextMap.get(getSessionId());
+        View sourceView = getSourceView();
+        Set<TopLevelItem> res;
+        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getAllItems(TopLevelItem.class), sourceView);
+        res = new HashSet(selectedJobs.size());
+        for (TopLevelItem item : selectedJobs) {
+            if (item != null) {
+                res.add(item);
             }
         }
         return res;
@@ -293,42 +305,26 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
-        String[] slaveNames = Stapler.getCurrentRequest().getParameterValues("slave");
+        UserContext context = contextMap.get(getSessionId());
         Set<Computer> res;
-        if (slaveNames == null) {
-            Computer[] items = Jenkins.getInstance().getComputers();
-            res = new HashSet<Computer>(items.length);
-            for (Computer item : items) {
+        List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
+        res = new HashSet<Computer>(selectedSlaves.size());
+        for (Computer item : selectedSlaves) {
+            if (item != null && item instanceof Computer) {
                 res.add((Computer) item);
-            }
-        } else {
-            res = new HashSet<Computer>(slaveNames.length);
-            for (String slaveName : slaveNames) {
-                Computer item = Jenkins.getInstance().getComputer(slaveName);
-                if (item != null && item instanceof Computer) {
-                    res.add((Computer) item);
-                }
             }
         }
         return res;
     }
 
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
-        String[] userNames = Stapler.getCurrentRequest().getParameterValues("user");
+        UserContext context = contextMap.get(getSessionId());
         Set<User> res;
-        if (userNames == null) {
-            Collection<User> items = User.getAll();
-            res = new HashSet<User>(items.size());
-            for (User item : items) {
+        List<User> selectedUsers = context.getUserFilter().doFilter();
+        res = new HashSet<User>(selectedUsers.size());
+        for (User item : selectedUsers) {
+            if (item != null && item instanceof User) {
                 res.add((User) item);
-            }
-        } else {
-            res = new HashSet<User>(userNames.length);
-            for (String userName : userNames) {
-                User item = User.get(userName, false, null);
-                if (item != null && item instanceof User) {
-                    res.add((User) item);
-                }
             }
         }
         return res;
@@ -337,7 +333,9 @@ public class SecurityInspectorAction extends ManagementLink {
     enum UserSubmit {
 
         Submit4jobs,
-        Submit4slaves;
+        Submit4slaves,
+        Submit4user,
+        GoToHP;
 
         static UserSubmit fromRequest(StaplerRequest req) throws IOException {
             Map map = req.getParameterMap();
@@ -365,5 +363,34 @@ public class SecurityInspectorAction extends ManagementLink {
             }
             throw new IOException("Cannot find an action in the reqest");
         }
+    }
+    
+    /**
+     * Gets identifier of the current session.
+     * @return Unique id of the current session.
+     */
+    public static String getSessionId() {
+        return Stapler.getCurrentRequest().getSession().getId(); 
+    }
+    
+    public boolean hasConfiguredFilters() {
+        return contextMap.containsKey(getSessionId());
+    }
+    
+    /**
+     * Cleans internal cache of JSON Objects for the session.
+     * @todo Cleanup approach, replace for URL-based parameterization
+     * @return Current Session Id
+     */
+    public String cleanCache() {
+        final String sessionId = getSessionId();
+        contextMap.flush(sessionId);      
+        return sessionId;
+    }
+    
+    public void updateSearchCache(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
+        cleanCache();
+        // Put Context to the map
+        contextMap.put(getSessionId(), new UserContext(jobFilter, slaveFilter, userFilter));
     }
 }

@@ -26,24 +26,24 @@ package org.jenkinsci.plugins.securityinspector;
 
 import hudson.model.Computer;
 import hudson.model.Hudson;
-import hudson.model.Job;
+import hudson.model.Item;
+import hudson.model.TopLevelItem;
 import hudson.model.View;
-import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
 import jenkins.model.Jenkins;
 
-public class JobReport extends PermissionReport<Job,Boolean> {
+public class JobReport extends PermissionReport<TopLevelItem,Boolean> {
 
     @Override
-    protected Boolean getEntryReport(Job column, Permission item) {
-        AuthorizationStrategy strategy = Jenkins.getInstance().getAuthorizationStrategy();
-        return strategy.getACL(column).hasPermission(item);
+    protected Boolean getEntryReport(TopLevelItem column, Permission item) {
+        Item i = Jenkins.getInstance().getItemByFullName(column.getFullName());
+        return i.hasPermission(item);
     }
     
-     public final void generateReport(Set<Job> rows) {
+     public final void generateReport(Set<TopLevelItem> rows) {
          Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
          groups.remove(PermissionGroup.get(Permission.class));
          groups.remove(PermissionGroup.get(Hudson.class));
@@ -53,7 +53,7 @@ public class JobReport extends PermissionReport<Job,Boolean> {
          super.generateReport(rows, groups);
      }
      
-     public static JobReport createReport(Set<Job> rows) {
+     public static JobReport createReport(Set<TopLevelItem> rows) {
          JobReport report = new JobReport();
          report.generateReport(rows);
          return report;
@@ -65,12 +65,12 @@ public class JobReport extends PermissionReport<Job,Boolean> {
     }
 
     @Override
-    public String getRowTitle(Job row) {
+    public String getRowTitle(TopLevelItem row) {
         return row.getFullDisplayName();
     }
 
     @Override
-    public boolean isEntryReportOk(Job row, Permission item, Boolean report) {
+    public boolean isEntryReportOk(TopLevelItem row, Permission item, Boolean report) {
         return report != null ? report.booleanValue() : false;
     }
 }

@@ -48,10 +48,6 @@ public class SecurityInspectorHelper {
         return Jenkins.getInstance().getAllItems();
     }
     
-    public String getDefaultUserId() {
-        return User.getUnknown().getId();
-    }
-    
     public String getDisplayName(User user) {
         return user != null ? user.getFullName() + " ("+ user.getId() + ")" : "";
     }
