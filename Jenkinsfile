@@ -9,7 +9,7 @@ node {
       mvnHome = tool 'M3'
    }
    stage('Hello!') {
-      echo 'Hello!'
+      echo 'Salut!'
    }
    stage('Build') {
       // Run the maven build
