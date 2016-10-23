@@ -41,6 +41,12 @@
                     <!-- User Report -->
                     <h2>${%User reports}</h2>
                     <table id="projectPermissions" name="data">
+                      
+                      <j:if test="${_report.groups.size() == null}">
+                        <h3>${%Report is empty}</h3>
+                      </j:if>
+                      
+                      <j:if test="${_report.groups.size() != null}">
 
                         <!-- The first row will show grouping -->
                         <tr class="group-row">
@@ -73,7 +79,7 @@
                         <j:forEach var="row" items = "${_report.rows}">                       
                             <tr>
                                 <td class="start" />
-                                <td>${_report.getRowTitle(row)}</td>
+                                <td style="white-space: nowrap">${_report.getRowTitle(row)}</td>
                                 <j:forEach var="group" items="${_report.groups}">
                                     <j:forEach var="groupItem" items="${_report.getItemsOfGroup(group)}">
                                         <td class="pane">
@@ -89,6 +95,7 @@
                                 <td class="stop" />
                             </tr>                       
                         </j:forEach>
+                      </j:if>
      
                     </table>
                 </f:block>

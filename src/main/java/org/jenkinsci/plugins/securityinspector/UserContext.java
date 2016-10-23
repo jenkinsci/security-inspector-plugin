@@ -37,13 +37,32 @@ class UserContext {
   private final JobFilter jobFilter;
   private final SlaveFilter slaveFilter;
   private final UserFilter userFilter;
-    
-    public UserContext(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
-        this.jobFilter = jobFilter;
-        this.slaveFilter = slaveFilter;
-        this.userFilter = userFilter;
-    }
+  private final String item;
 
+    public UserContext(JobFilter jobFilter, String item) {
+        this.jobFilter = jobFilter;
+        this.item = item;
+        
+        this.slaveFilter = null;
+        this.userFilter = null;
+    }
+    
+    public UserContext(SlaveFilter slaveFilter, String item) {
+        this.slaveFilter = slaveFilter;
+        this.item = item;
+        
+        this.jobFilter = null;
+        this.userFilter = null;
+    }
+    
+    public UserContext(UserFilter userFilter, String item) {
+        this.userFilter = userFilter;
+        this.item = item;
+        
+        this.jobFilter = null;
+        this.slaveFilter = null;
+    }
+    
     public JobFilter getJobFilter() {
         return jobFilter;
     }
@@ -54,5 +73,9 @@ class UserContext {
     
     public UserFilter getUserFilter() {
         return userFilter;
+    }
+    
+    public String getItem() {
+        return item;
     }
 }

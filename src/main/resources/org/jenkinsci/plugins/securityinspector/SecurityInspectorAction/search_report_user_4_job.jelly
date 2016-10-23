@@ -78,7 +78,7 @@
                         <j:forEach var="row" items = "${_report.rows}">                       
                             <tr>
                                 <td class="start" />
-                                <td>${_report.getRowTitle(row)}</td>
+                                <td style="white-space: nowrap">${_report.getRowTitle(row)}</td>
                                 <j:forEach var="group" items="${_report.groups}">
                                     <j:forEach var="groupItem" items="${_report.getItemsOfGroup(group)}">
                                         <td class="pane">

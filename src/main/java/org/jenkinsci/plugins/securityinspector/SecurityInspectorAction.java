@@ -193,10 +193,10 @@ public class SecurityInspectorAction extends ManagementLink {
                     return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedUser");
-                b.append("search_report_user_4_job?user=").append(selectedItem);
+                b.append("search_report_user_4_job");
                 View sourceView = getSourceView();
                 JobFilter filters = new JobFilter(req, sourceView);
-                updateSearchCache(filters, null, null);
+                updateSearchCache(filters, selectedItem);
                 break;
               
             case Submit4slaves:
@@ -207,9 +207,9 @@ public class SecurityInspectorAction extends ManagementLink {
                     return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedUser");
-                b.append("search_report_user_4_slave?user=").append(selectedItem);
+                b.append("search_report_user_4_slave");
                 SlaveFilter filter4slave = new SlaveFilter(req);
-                updateSearchCache(null, filter4slave, null);
+                updateSearchCache(filter4slave, selectedItem);
                 break;
               
             case Submit4user:
@@ -220,9 +220,9 @@ public class SecurityInspectorAction extends ManagementLink {
                     return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedJobs");
-                b.append("search_report_job?job=").append(selectedItem);
+                b.append("search_report_job");
                 UserFilter filter4user = new UserFilter(req);
-                updateSearchCache(null, null, filter4user);
+                updateSearchCache(filter4user, selectedItem);
                 break;
               
             case GoToHP:
@@ -266,6 +266,9 @@ public class SecurityInspectorAction extends ManagementLink {
         }           
     }
     
+    /**
+     * Get Jobs/Slaves/Users from context
+     */
     public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         View sourceView = getSourceView();
@@ -279,31 +282,7 @@ public class SecurityInspectorAction extends ManagementLink {
         }
         return res;
     }
-
-    public User getRequestedUser() throws HttpResponses.HttpResponseException {
-        String userId = Stapler.getCurrentRequest().getParameter("user");
-        if (userId == null) {
-            throw HttpResponses.error(404, "'user' has not been specified");
-        }
-        User user = User.get(userId, false, null);
-        if (user == null) {
-            throw HttpResponses.error(404, "User " + userId + " does not exists");
-        }
-        return user;
-    }
-
-    public Item getRequestedJob() throws HttpResponses.HttpResponseException {
-        String jobName = Stapler.getCurrentRequest().getParameter("job");
-        if (jobName == null) {
-            throw HttpResponses.error(404, "'job' has not been specified");
-        }
-        Item job = Jenkins.getInstance().getItemByFullName(jobName, Item.class);
-        if (job == null) {
-            throw HttpResponses.error(404, "Job " + jobName + " does not exists");
-        }
-        return job;
-    }
-
+    
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
         Set<Computer> res;
@@ -329,7 +308,35 @@ public class SecurityInspectorAction extends ManagementLink {
         }
         return res;
     }
+    
+    /**
+     * Get selected user/job from context
+     */
+    public User getRequestedUser() throws HttpResponses.HttpResponseException {
+        UserContext context = contextMap.get(getSessionId());
+        String userId = context.getItem();
+        User user = User.get(userId, false, null);
+        if (user == null) {
+            throw HttpResponses.error(404, "User " + userId + " does not exists");
+        }
+        return user;
+    }
 
+    public Item getRequestedJob() throws HttpResponses.HttpResponseException {
+        UserContext context = contextMap.get(getSessionId());
+        String jobName = context.getItem();
+        Item job = Jenkins.getInstance().getItemByFullName(jobName, Item.class);
+        if (job == null) {
+            throw HttpResponses.error(404, "Job " + jobName + " does not exists");
+        }
+        return job;
+    }
+
+    /**
+     * Buttons:
+     * - Submit Jobs/Slaves/Users reports
+     * - Go to Home Page
+     */
     enum UserSubmit {
 
         Submit4jobs,
@@ -348,6 +355,10 @@ public class SecurityInspectorAction extends ManagementLink {
         }
     }
     
+    /**
+     * Buttons:
+     * Go to page with filters
+     */
     enum GoHome {
 
         GoToJF,
@@ -388,9 +399,21 @@ public class SecurityInspectorAction extends ManagementLink {
         return sessionId;
     }
     
-    public void updateSearchCache(JobFilter jobFilter, SlaveFilter slaveFilter, UserFilter userFilter) {
+    public void updateSearchCache(JobFilter jobFilter, String item) {
         cleanCache();
         // Put Context to the map
-        contextMap.put(getSessionId(), new UserContext(jobFilter, slaveFilter, userFilter));
+        contextMap.put(getSessionId(), new UserContext(jobFilter, item));
+    }
+    
+    public void updateSearchCache(SlaveFilter slaveFilter, String item) {
+        cleanCache();
+        // Put Context to the map
+        contextMap.put(getSessionId(), new UserContext(slaveFilter, item));
+    }
+    
+    public void updateSearchCache(UserFilter userFilter, String item) {
+        cleanCache();
+        // Put Context to the map
+        contextMap.put(getSessionId(), new UserContext(userFilter, item));
     }
 }
