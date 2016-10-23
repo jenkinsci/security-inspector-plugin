@@ -27,7 +27,6 @@ package org.jenkinsci.plugins.securityinspector;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import static hudson.model.Descriptor.find;
 import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
@@ -133,9 +132,7 @@ public class JobFilter {
         synchronized (this) {
             names = new TreeSet<String>();
         }
-        
-        
-        
+
         final List<TopLevelItem> allItems;
         final Jenkins jenkins;
         if (view.getOwnerItemGroup() instanceof Jenkins) {

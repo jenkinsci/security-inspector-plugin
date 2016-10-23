@@ -297,7 +297,7 @@ public class SecurityInspectorAction extends ManagementLink {
         if (jobName == null) {
             throw HttpResponses.error(404, "'job' has not been specified");
         }
-        Item job = Jenkins.getInstance().getItem(jobName);
+        Item job = Jenkins.getInstance().getItemByFullName(jobName, Item.class);
         if (job == null) {
             throw HttpResponses.error(404, "Job " + jobName + " does not exists");
         }

@@ -39,7 +39,7 @@
                     <f:entry title="${%Selected job: }"> 
                         <select name="selectedJobs" class="setting-input">
                             <j:forEach var="job" items="${_jobList}">
-                                <f:option value="${job.getDisplayName()}">
+                                <f:option value="${job.getFullName()}">
                                     ${it.helper.getJobName(job)}
                                 </f:option>
                             </j:forEach>

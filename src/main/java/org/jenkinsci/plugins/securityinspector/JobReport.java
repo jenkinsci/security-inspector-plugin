@@ -40,6 +40,9 @@ public class JobReport extends PermissionReport<TopLevelItem,Boolean> {
     @Override
     protected Boolean getEntryReport(TopLevelItem column, Permission item) {
         Item i = Jenkins.getInstance().getItemByFullName(column.getFullName());
+        if (i==null) {
+          return false;
+        }
         return i.hasPermission(item);
     }
     
