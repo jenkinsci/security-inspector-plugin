@@ -48,18 +48,11 @@ public class SlaveFilter {
      * Compiled include pattern from the includeRegex string.
      */
     private transient Pattern includePattern4Slave;
-
-    /**
-     * Filter by enabled/disabled status of jobs.
-     * Null for no filter, true for enabled-only, false for disabled-only.
-     */
-    private Boolean statusFilter4Slave;
     
     /**
      * Constructs empty filter.
      */
     public SlaveFilter() {
-        this.statusFilter4Slave = null;
         this.includeRegex4Slave = null;        
     }
     
@@ -102,12 +95,11 @@ public class SlaveFilter {
             } 
         }
   
-        Boolean localStatusFilter = this.statusFilter4Slave; // capture the value to isolate us from concurrent update
         List<Computer> items = new ArrayList<Computer>(names.size());
         for (String n : names) {
             Computer item = Jenkins.getInstance().getComputer(n);
             // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (localStatusFilter == null)) {
+            if(item!=null) {
                 items.add(item);
             }
         }
@@ -122,9 +114,5 @@ public class SlaveFilter {
 
     public String getIncludeRegex() {
         return includeRegex4Slave;
-    }
-
-    public Boolean getStatusFilter() {
-        return statusFilter4Slave;
     }
 }
