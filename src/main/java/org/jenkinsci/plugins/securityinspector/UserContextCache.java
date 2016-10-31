@@ -31,11 +31,6 @@ import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.ge
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- *
- * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
- */
-
 @Restricted(NoExternalUse.class)
 class UserContextCache {
   

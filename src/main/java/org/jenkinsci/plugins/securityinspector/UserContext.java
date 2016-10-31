@@ -27,10 +27,6 @@ package org.jenkinsci.plugins.securityinspector;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- *
- * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
- */
 @Restricted(NoExternalUse.class)
 class UserContext {
   
