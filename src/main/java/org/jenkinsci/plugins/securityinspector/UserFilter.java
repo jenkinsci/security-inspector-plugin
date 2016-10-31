@@ -49,18 +49,11 @@ public class UserFilter {
      * Compiled include pattern from the includeRegex string.
      */
     private transient Pattern includePattern4User;
-
-    /**
-     * Filter by enabled/disabled status of jobs.
-     * Null for no filter, true for enabled-only, false for disabled-only.
-     */
-    private Boolean statusFilter4User;
     
     /**
      * Constructs empty filter.
      */
     public UserFilter() {
-        this.statusFilter4User = null;
         this.includeRegex4User = null;        
     }
     
@@ -102,29 +95,22 @@ public class UserFilter {
                 names.add(userId);
             } 
         }
-  
-        Boolean localStatusFilter = this.statusFilter4User; // capture the value to isolate us from concurrent update
+
         List<User> items = new ArrayList<User>(names.size());
         for (String n : names) {
             User item = User.get(n, false, null);
-            // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (localStatusFilter == null)) {
+            if(item!=null) {
                 items.add(item);
             }
         }      
         return items;
     }
   
-   
     public Pattern getIncludePattern() {
         return includePattern4User;
     }
 
     public String getIncludeRegex() {
         return includeRegex4User;
-    }
-
-    public Boolean getStatusFilter() {
-        return statusFilter4User;
     }
 }

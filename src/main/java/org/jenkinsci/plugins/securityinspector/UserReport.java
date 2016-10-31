@@ -28,12 +28,10 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.User;
 import hudson.model.View;
-import hudson.security.AuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
-import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -46,14 +44,13 @@ public class UserReport extends PermissionReport<User, Boolean> {
     private UserReport(Item job) {
         this.job4report = job;
     }
-
+    
     @Override
     protected Boolean getEntryReport(User column, Permission item) {
-        AuthorizationStrategy strategy = Jenkins.getInstance().getAuthorizationStrategy();
-        Boolean result;
-
         // Impersonate to check the permission
         final Authentication auth;
+        Boolean result;
+        
         try {
           auth = column.impersonate();
         } catch (UsernameNotFoundException ex) {
@@ -100,6 +97,6 @@ public class UserReport extends PermissionReport<User, Boolean> {
 
     @Override
     public boolean isEntryReportOk(User row, Permission item, Boolean report) {
-        return report != null ? report.booleanValue() : false;
+        return report != null ? report : false;
     }
 }
