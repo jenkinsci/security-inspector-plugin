@@ -33,17 +33,31 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class JobReport extends PermissionReport<TopLevelItem,Boolean> {
 
     @Override
     protected Boolean getEntryReport(TopLevelItem column, Permission item) {
-        Item i = Jenkins.getInstance().getItemByFullName(column.getFullName());
-        if (i==null) {
-          return false;
+        Item i = getInstance().getItemByFullName(column.getFullName());
+        if (i == null) { 
+            // Item is not accessible anymore, so we cannot check it's permission
+            return false;
         }
         return i.hasPermission(item);
+    }
+    
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public static Jenkins getInstance() throws IllegalStateException {
+        Jenkins instance = Jenkins.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
     }
     
      public final void generateReport(Set<TopLevelItem> rows) {

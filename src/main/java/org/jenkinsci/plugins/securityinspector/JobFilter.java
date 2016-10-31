@@ -101,11 +101,7 @@ public class JobFilter {
             includeRegex = null;
             includePattern = null;
         }
-       
-        if (jobFilters == null) {
-            jobFilters = new LinkedList<ViewJobFilter>();
-        }
-              
+             
         List<ViewJobFilter> items = new ArrayList<ViewJobFilter>();
         Object formData = req.getSubmittedForm().get("jobFilters");
         Collection<? extends Descriptor<ViewJobFilter>> descriptors = ViewJobFilter.all();
