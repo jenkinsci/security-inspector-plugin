@@ -425,7 +425,6 @@ public class SecurityInspectorAction extends ManagementLink {
     
     /**
      * Cleans internal cache of JSON Objects for the session.
-     * @todo Cleanup approach, replace for URL-based parameterization
      * @return Current Session Id
      */
     public String cleanCache() {
