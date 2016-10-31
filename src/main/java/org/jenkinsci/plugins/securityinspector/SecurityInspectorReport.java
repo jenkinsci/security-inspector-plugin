@@ -77,6 +77,7 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     
     public Comparator<TRow> getComparator() {
         return new Comparator<TRow>() {
+            @Override
             public int compare(TRow o1, TRow o2) {
                 return getRowTitle(o1).compareTo(getRowTitle(o2));
             }

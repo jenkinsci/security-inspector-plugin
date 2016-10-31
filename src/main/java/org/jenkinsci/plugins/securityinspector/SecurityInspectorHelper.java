@@ -31,7 +31,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class SecurityInspectorHelper {
 
@@ -44,8 +47,18 @@ public class SecurityInspectorHelper {
         return sortedUser;
     }
     
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public static Jenkins getInstance() throws IllegalStateException {
+        Jenkins instance = Jenkins.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
+    }
+    
     public List<Item> getPossibleJobs() {
-        return Jenkins.getInstance().getAllItems();
+        return getInstance().getAllItems();
     }
     
     public String getDisplayName(User user) {
@@ -58,6 +71,7 @@ public class SecurityInspectorHelper {
     
     public Comparator<User> getComparatorUser() {
         return new Comparator<User>() {
+            @Override
             public int compare(User o1, User o2) {
                 return o1.getId().compareTo(o2.getId());
             }
@@ -66,6 +80,7 @@ public class SecurityInspectorHelper {
     
     public Comparator<Item> getComparatorItem() {
         return new Comparator<Item>() {
+            @Override
             public int compare(Item o1, Item o2) {
                 return o1.getFullName().compareTo(o2.getFullName());
             }
