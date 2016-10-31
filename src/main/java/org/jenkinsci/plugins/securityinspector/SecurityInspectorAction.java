@@ -50,6 +50,8 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -67,9 +69,9 @@ public class SecurityInspectorAction extends ManagementLink {
     } 
     
     protected Object readResolve() {
-        if (contextMap == null) {
+        /*if (contextMap == null) {
             contextMap = new UserContextCache();
-        }
+        }*/
         return this;
     }
     
@@ -98,6 +100,16 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public SecurityInspectorHelper getHelper() {
         return helper;
+    }
+    
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public static Jenkins getInstance() throws IllegalStateException {
+        Jenkins instance = Jenkins.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
     }
     
     public SecurityInspectorReport getReportJob() {
@@ -169,7 +181,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     private View getSourceView() {
-        for (View view : Jenkins.getInstance().getViews()) {
+        for (View view : getInstance().getViews()) {
             if (view instanceof AllView) {
                 return view;
             }
@@ -178,7 +190,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+        getInstance().checkPermission(Jenkins.ADMINISTER);
         String selectedItem;
         String valid;
         StringBuilder b = new StringBuilder();
@@ -190,7 +202,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 try {
                     Pattern.compile(valid);
                 } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                    return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedUser");
                 b.append("search_report_user_4_job");
@@ -204,7 +216,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 try {
                     Pattern.compile(valid);
                 } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                    return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedUser");
                 b.append("search_report_user_4_slave");
@@ -217,7 +229,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 try {
                     Pattern.compile(valid);
                 } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
+                    return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
                 }
                 selectedItem = req.getParameter("selectedJobs");
                 b.append("search_report_job");
@@ -226,7 +238,7 @@ public class SecurityInspectorAction extends ManagementLink {
                 break;
               
             case GoToHP:
-                return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector");
+                return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector");
               
             default:
                 throw new IOException("Action " + action + " is not supported");
@@ -239,7 +251,7 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public List<Item> doAutoCompleteJob(@QueryParameter String value) {
         List<Item> c = new LinkedList<Item>();
-        List<Item> items = Jenkins.getInstance().getAllItems();
+        List<Item> items = getInstance().getAllItems();
         for (Item item : items) {
             if (item.toString().toLowerCase().startsWith(value.toLowerCase())) {
                 c.add(item);
@@ -249,7 +261,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
+        getInstance().checkPermission(Jenkins.ADMINISTER);
         GoHome action = GoHome.fromRequest(req);
         switch (action) {
             case GoToJF:
@@ -268,12 +280,18 @@ public class SecurityInspectorAction extends ManagementLink {
     
     /**
      * Get Jobs/Slaves/Users from context
+     * @return 
      */
     public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
+        if (context == null) {
+          // TODO: 
+            throw HttpResponses.error(404, "Context have not been found");
+        }
         View sourceView = getSourceView();
         Set<TopLevelItem> res;
-        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getAllItems(TopLevelItem.class), sourceView);
+        JobFilter jobfilter = context.getJobFilter();
+        List<TopLevelItem> selectedJobs = jobfilter.doFilter(getInstance().getAllItems(TopLevelItem.class), sourceView);
         res = new HashSet(selectedJobs.size());
         for (TopLevelItem item : selectedJobs) {
             if (item != null) {
@@ -285,12 +303,16 @@ public class SecurityInspectorAction extends ManagementLink {
     
     public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
+        if (context == null) {
+          // TODO: 
+            throw HttpResponses.error(404, "Context have not been found");
+        }
         Set<Computer> res;
         List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
         res = new HashSet<Computer>(selectedSlaves.size());
         for (Computer item : selectedSlaves) {
-            if (item != null && item instanceof Computer) {
-                res.add((Computer) item);
+            if (item != null) {
+                res.add(item);
             }
         }
         return res;
@@ -298,12 +320,16 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
+        if (context == null) {
+          // TODO: 
+            throw HttpResponses.error(404, "Context have not been found");
+        }
         Set<User> res;
         List<User> selectedUsers = context.getUserFilter().doFilter();
         res = new HashSet<User>(selectedUsers.size());
         for (User item : selectedUsers) {
-            if (item != null && item instanceof User) {
-                res.add((User) item);
+            if (item != null) {
+                res.add(item);
             }
         }
         return res;
@@ -311,9 +337,14 @@ public class SecurityInspectorAction extends ManagementLink {
     
     /**
      * Get selected user/job from context
+     * @return 
      */
     public User getRequestedUser() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
+        if (context == null) {
+          // TODO: 
+            throw HttpResponses.error(404, "Context have not been found");
+        }
         String userId = context.getItem();
         User user = User.get(userId, false, null);
         if (user == null) {
@@ -324,8 +355,12 @@ public class SecurityInspectorAction extends ManagementLink {
 
     public Item getRequestedJob() throws HttpResponses.HttpResponseException {
         UserContext context = contextMap.get(getSessionId());
+        if (context == null) {
+          // TODO: 
+            throw HttpResponses.error(404, "Context have not been found");
+        }
         String jobName = context.getItem();
-        Item job = Jenkins.getInstance().getItemByFullName(jobName, Item.class);
+        Item job = getInstance().getItemByFullName(jobName, Item.class);
         if (job == null) {
             throw HttpResponses.error(404, "Job " + jobName + " does not exists");
         }
