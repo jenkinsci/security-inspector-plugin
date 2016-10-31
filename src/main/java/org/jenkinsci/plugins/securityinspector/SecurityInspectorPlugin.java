@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,13 @@ import java.util.regex.PatternSyntaxException;
 import org.kohsuke.stapler.QueryParameter;
 
 public class SecurityInspectorPlugin extends Plugin {
-        
-    public FormValidation doCheckRegex(@QueryParameter String regex) {
-        try {
-            Pattern.compile(regex);
-        } catch (PatternSyntaxException exception) {
-            return FormValidation.error(exception.getDescription());
-        }
-        return FormValidation.ok("Regular expression is valid");
+
+  public FormValidation doCheckRegex(@QueryParameter String regex) {
+    try {
+      Pattern.compile(regex);
+    } catch (PatternSyntaxException exception) {
+      return FormValidation.error(exception.getDescription());
     }
+    return FormValidation.ok("Regular expression is valid");
+  }
 }

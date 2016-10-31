@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,56 +41,56 @@ import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public class SlaveReport extends PermissionReport<Computer,Boolean> {
+public class SlaveReport extends PermissionReport<Computer, Boolean> {
 
-    @Override
-    protected Boolean getEntryReport(Computer column, Permission item) {
-        AuthorizationStrategy strategy = getInstance().getAuthorizationStrategy();        
-        return strategy.getACL(column).hasPermission(item);
-    }
-    
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public static Jenkins getInstance() throws IllegalStateException {
-        Jenkins instance = Jenkins.getInstance();
-        if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-        }
-        return instance;
-    }
-    
-     public final void generateReport(Set<Computer> rows) {
-         Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
-         groups.remove(PermissionGroup.get(Permission.class));
-         groups.remove(PermissionGroup.get(Hudson.class));
-         //groups.remove(PermissionGroup.get(Computer.class));
-         groups.remove(PermissionGroup.get(View.class));
-         groups.remove(PermissionGroup.get(Job.class));
-         groups.remove(PermissionGroup.get(Item.class));
-         groups.remove(PermissionGroup.get(SCM.class));
-         groups.remove(PermissionGroup.get(Run.class));
-         
-         super.generateReport(rows, groups);
-     }
-     
-     public static SlaveReport createReport(Set<Computer> rows) {
-         SlaveReport report = new SlaveReport();
-         report.generateReport(rows);
-         return report;
-     }
+  @Override
+  protected Boolean getEntryReport(Computer column, Permission item) {
+    AuthorizationStrategy strategy = getInstance().getAuthorizationStrategy();
+    return strategy.getACL(column).hasPermission(item);
+  }
 
-    @Override
-    public String getRowColumnHeader() {
-        return Messages.SlaveReport_RowColumnHeader();
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public static Jenkins getInstance() throws IllegalStateException {
+    Jenkins instance = Jenkins.getInstance();
+    if (instance == null) {
+      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
     }
+    return instance;
+  }
 
-    @Override
-    public String getRowTitle(Computer row) {
-        return row.getDisplayName();
-    }
+  public final void generateReport(Set<Computer> rows) {
+    Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+    groups.remove(PermissionGroup.get(Permission.class));
+    groups.remove(PermissionGroup.get(Hudson.class));
+    //groups.remove(PermissionGroup.get(Computer.class));
+    groups.remove(PermissionGroup.get(View.class));
+    groups.remove(PermissionGroup.get(Job.class));
+    groups.remove(PermissionGroup.get(Item.class));
+    groups.remove(PermissionGroup.get(SCM.class));
+    groups.remove(PermissionGroup.get(Run.class));
 
-    @Override
-    public boolean isEntryReportOk(Computer row, Permission item, Boolean report) {
-        return report != null ? report : false;
-    }
+    super.generateReport(rows, groups);
+  }
+
+  public static SlaveReport createReport(Set<Computer> rows) {
+    SlaveReport report = new SlaveReport();
+    report.generateReport(rows);
+    return report;
+  }
+
+  @Override
+  public String getRowColumnHeader() {
+    return Messages.SlaveReport_RowColumnHeader();
+  }
+
+  @Override
+  public String getRowTitle(Computer row) {
+    return row.getDisplayName();
+  }
+
+  @Override
+  public boolean isEntryReportOk(Computer row, Permission item, Boolean report) {
+    return report != null ? report : false;
+  }
 }

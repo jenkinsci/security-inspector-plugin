@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,145 +49,147 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class JobFilter {
-    
-    /**
-     * Jobs filters
-     */
-    private List<ViewJobFilter> jobFilters;
 
-    /**
-     * Include regex string.
-     */
-    private String includeRegex;
-    
-    /**
-     * Compiled include pattern from the includeRegex string.
-     */
-    private transient Pattern includePattern;
+  /**
+   * Jobs filters
+   */
+  private List<ViewJobFilter> jobFilters;
 
-    /**
-     * Filter by enabled/disabled status of jobs.
-     * Null for no filter, true for enabled-only, false for disabled-only.
-     */
-    private Boolean statusFilter;
-    
-    /**
-     * Constructs empty filter.
-     */
-    public JobFilter() {
-        this.statusFilter = null;
-        this.jobFilters = new LinkedList<ViewJobFilter>();
-        this.includeRegex = null;        
-    }
-    
-      /**
-     * Constructs filter from StaplerRequest.
-     * This constructor is just a modified copy of ListView's configure method.
-     * @param req Stapler Request
-     * @param parentView Parent View, which has created filter
-     * @throws hudson.model.Descriptor.FormException
-     * @throws IOException
-     * @throws ServletException 
-     */
-    public JobFilter(StaplerRequest req, View parentView) 
-            throws Descriptor.FormException, IOException, ServletException {
-        if (req.getParameter("useincluderegex") != null) {
-            includeRegex = Util.nullify(req.getParameter("_.includeRegex"));
-            if (includeRegex == null)
-                includePattern = null;
-            else
-                includePattern = Pattern.compile(includeRegex);
-        } else {
-            includeRegex = null;
-            includePattern = null;
-        }
-             
-        List<ViewJobFilter> items = new ArrayList<ViewJobFilter>();
-        Object formData = req.getSubmittedForm().get("jobFilters");
-        Collection<? extends Descriptor<ViewJobFilter>> descriptors = ViewJobFilter.all();
+  /**
+   * Include regex string.
+   */
+  private String includeRegex;
 
-        if (formData != null) {
-            for (Object o : JSONArray.fromObject(formData)) {
-                JSONObject jo = (JSONObject) o;
-                String kind = jo.getString("kind");
-                Descriptor<ViewJobFilter> d = findByDescribableClassName(descriptors, kind);
-                if (d != null) {
-                    items.add(d.newInstance(req, jo));
-                }
-            }
-        }
-       
-        String filter = Util.fixEmpty(req.getParameter("statusFilter"));
-        statusFilter = filter != null ? "1".equals(filter) : null;
-        jobFilters = items;
-    }
-  
-    public List<TopLevelItem> doFilter(List<TopLevelItem> input, View view) {
-        SortedSet<String> names;
+  /**
+   * Compiled include pattern from the includeRegex string.
+   */
+  private transient Pattern includePattern;
 
-        synchronized (this) {
-            names = new TreeSet<String>();
-        }
+  /**
+   * Filter by enabled/disabled status of jobs. Null for no filter, true for
+   * enabled-only, false for disabled-only.
+   */
+  private Boolean statusFilter;
 
-        final List<TopLevelItem> allItems;
-        final Jenkins jenkins;
-        if (view.getOwnerItemGroup() instanceof Jenkins) {
-          final ItemGroup<? extends TopLevelItem> ownerItemGroup = view.getOwnerItemGroup();
-          jenkins = ((Jenkins)ownerItemGroup);
-          allItems = jenkins.getAllItems(TopLevelItem.class);
-        } else {
-          // TODO: Handle folders?
-          return Collections.emptyList();
-        }
-          
-        if (includePattern != null) {
-            for (Item item : allItems) {
-                String itemName = item.getFullName();
-                if (includePattern.matcher(itemName).matches()) {
-                    names.add(itemName);
-                } 
-            }
-        } else { 
-            for (Item item : allItems) {
-                String itemName = item.getFullName();
-                names.add(itemName);
-            }
-        }
-  
-        Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-        List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
-        for (String n : names) {
-            TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
-            // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (localStatusFilter == null 
-                    || !(item instanceof AbstractProject)
-                    || ((AbstractProject)item).isDisabled() ^ localStatusFilter)) {
-                items.add(item);
-            }
-        }
+  /**
+   * Constructs empty filter.
+   */
+  public JobFilter() {
+    this.statusFilter = null;
+    this.jobFilters = new LinkedList<ViewJobFilter>();
+    this.includeRegex = null;
+  }
 
-        // Check the filters
-        Iterable<ViewJobFilter> localJobFilters = getJobFilters();
-        for (ViewJobFilter jobFilter: localJobFilters) {
-    		items = jobFilter.filter(items, allItems, view);
-        }
-        
-        return items;
-    }
-    
-    public List<ViewJobFilter> getJobFilters() {
-    	return jobFilters;
+  /**
+   * Constructs filter from StaplerRequest. This constructor is just a modified
+   * copy of ListView's configure method.
+   *
+   * @param req Stapler Request
+   * @param parentView Parent View, which has created filter
+   * @throws hudson.model.Descriptor.FormException
+   * @throws IOException
+   * @throws ServletException
+   */
+  public JobFilter(StaplerRequest req, View parentView)
+          throws Descriptor.FormException, IOException, ServletException {
+    if (req.getParameter("useincluderegex") != null) {
+      includeRegex = Util.nullify(req.getParameter("_.includeRegex"));
+      if (includeRegex == null) {
+        includePattern = null;
+      } else {
+        includePattern = Pattern.compile(includeRegex);
+      }
+    } else {
+      includeRegex = null;
+      includePattern = null;
     }
 
-    public Pattern getIncludePattern() {
-        return includePattern;
+    List<ViewJobFilter> items = new ArrayList<ViewJobFilter>();
+    Object formData = req.getSubmittedForm().get("jobFilters");
+    Collection<? extends Descriptor<ViewJobFilter>> descriptors = ViewJobFilter.all();
+
+    if (formData != null) {
+      for (Object o : JSONArray.fromObject(formData)) {
+        JSONObject jo = (JSONObject) o;
+        String kind = jo.getString("kind");
+        Descriptor<ViewJobFilter> d = findByDescribableClassName(descriptors, kind);
+        if (d != null) {
+          items.add(d.newInstance(req, jo));
+        }
+      }
     }
 
-    public String getIncludeRegex() {
-        return includeRegex;
+    String filter = Util.fixEmpty(req.getParameter("statusFilter"));
+    statusFilter = filter != null ? "1".equals(filter) : null;
+    jobFilters = items;
+  }
+
+  public List<TopLevelItem> doFilter(List<TopLevelItem> input, View view) {
+    SortedSet<String> names;
+
+    synchronized (this) {
+      names = new TreeSet<String>();
     }
 
-    public Boolean getStatusFilter() {
-        return statusFilter;
+    final List<TopLevelItem> allItems;
+    final Jenkins jenkins;
+    if (view.getOwnerItemGroup() instanceof Jenkins) {
+      final ItemGroup<? extends TopLevelItem> ownerItemGroup = view.getOwnerItemGroup();
+      jenkins = ((Jenkins) ownerItemGroup);
+      allItems = jenkins.getAllItems(TopLevelItem.class);
+    } else {
+      // TODO: Handle folders?
+      return Collections.emptyList();
     }
+
+    if (includePattern != null) {
+      for (Item item : allItems) {
+        String itemName = item.getFullName();
+        if (includePattern.matcher(itemName).matches()) {
+          names.add(itemName);
+        }
+      }
+    } else {
+      for (Item item : allItems) {
+        String itemName = item.getFullName();
+        names.add(itemName);
+      }
+    }
+
+    Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
+    List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
+    for (String n : names) {
+      TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
+      // Add if no status filter or filter matches enabled/disabled status:
+      if (item != null && (localStatusFilter == null
+              || !(item instanceof AbstractProject)
+              || ((AbstractProject) item).isDisabled() ^ localStatusFilter)) {
+        items.add(item);
+      }
+    }
+
+    // Check the filters
+    Iterable<ViewJobFilter> localJobFilters = getJobFilters();
+    for (ViewJobFilter jobFilter : localJobFilters) {
+      items = jobFilter.filter(items, allItems, view);
+    }
+
+    return items;
+  }
+
+  public List<ViewJobFilter> getJobFilters() {
+    return jobFilters;
+  }
+
+  public Pattern getIncludePattern() {
+    return includePattern;
+  }
+
+  public String getIncludeRegex() {
+    return includeRegex;
+  }
+
+  public Boolean getStatusFilter() {
+    return statusFilter;
+  }
 }

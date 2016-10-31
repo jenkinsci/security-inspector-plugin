@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.jenkinsci.plugins.securityinspector;
 
 import hudson.model.Computer;
@@ -39,64 +40,64 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 public class UserReport extends PermissionReport<User, Boolean> {
 
-    Item job4report;
+  Item job4report;
 
-    private UserReport(Item job) {
-        this.job4report = job;
-    }
-    
-    @Override
-    protected Boolean getEntryReport(User column, Permission item) {
-        // Impersonate to check the permission
-        final Authentication auth;
-        Boolean result;
-        
-        try {
-          auth = column.impersonate();
-        } catch (UsernameNotFoundException ex) {
-          return Boolean.FALSE;
-        }
-        
-        SecurityContext initialContext = null;
-        try {
-            initialContext = hudson.security.ACL.impersonate(auth);
-            result = job4report.hasPermission(item);
-        } finally {
-            if (initialContext != null) {
-                SecurityContextHolder.setContext(initialContext);
-            }
-        }
-        return result;
+  private UserReport(Item job) {
+    this.job4report = job;
+  }
+
+  @Override
+  protected Boolean getEntryReport(User column, Permission item) {
+    // Impersonate to check the permission
+    final Authentication auth;
+    Boolean result;
+
+    try {
+      auth = column.impersonate();
+    } catch (UsernameNotFoundException ex) {
+      return Boolean.FALSE;
     }
 
-    public final void generateReport(Set<User> rows) {
-        Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
-        groups.remove(PermissionGroup.get(Permission.class));
-        groups.remove(PermissionGroup.get(Hudson.class));
-        groups.remove(PermissionGroup.get(Computer.class));
-        groups.remove(PermissionGroup.get(View.class));
-
-        super.generateReport(rows, groups);
+    SecurityContext initialContext = null;
+    try {
+      initialContext = hudson.security.ACL.impersonate(auth);
+      result = job4report.hasPermission(item);
+    } finally {
+      if (initialContext != null) {
+        SecurityContextHolder.setContext(initialContext);
+      }
     }
+    return result;
+  }
 
-    public static UserReport createReport(Set<User> rows, Item job) {
-        UserReport report = new UserReport(job);
-        report.generateReport(rows);
-        return report;
-    }
+  public final void generateReport(Set<User> rows) {
+    Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+    groups.remove(PermissionGroup.get(Permission.class));
+    groups.remove(PermissionGroup.get(Hudson.class));
+    groups.remove(PermissionGroup.get(Computer.class));
+    groups.remove(PermissionGroup.get(View.class));
 
-    @Override
-    public String getRowColumnHeader() {
-        return Messages.UserReport_RowColumnHeader();
-    }
+    super.generateReport(rows, groups);
+  }
 
-    @Override
-    public String getRowTitle(User row) {
-        return row.getId();
-    }
+  public static UserReport createReport(Set<User> rows, Item job) {
+    UserReport report = new UserReport(job);
+    report.generateReport(rows);
+    return report;
+  }
 
-    @Override
-    public boolean isEntryReportOk(User row, Permission item, Boolean report) {
-        return report != null ? report : false;
-    }
+  @Override
+  public String getRowColumnHeader() {
+    return Messages.UserReport_RowColumnHeader();
+  }
+
+  @Override
+  public String getRowTitle(User row) {
+    return row.getId();
+  }
+
+  @Override
+  public boolean isEntryReportOk(User row, Permission item, Boolean report) {
+    return report != null ? report : false;
+  }
 }

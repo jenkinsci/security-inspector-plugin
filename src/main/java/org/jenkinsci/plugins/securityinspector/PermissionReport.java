@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,37 +34,37 @@ import java.util.Set;
 public abstract class PermissionReport<TRow, TEntryReport>
         extends SecurityInspectorReport<TRow, PermissionGroup, Permission, TEntryReport> {
 
-    public final void generateReport(Set<TRow> rows, Set<PermissionGroup> groups) {
-        Set<Permission> permissions = new HashSet<Permission>();
-        for (PermissionGroup group : groups) {
-            permissions.addAll(getItemsOfGroup(group));
-        }
-        generateReport(rows, permissions, groups);
+  public final void generateReport(Set<TRow> rows, Set<PermissionGroup> groups) {
+    Set<Permission> permissions = new HashSet<Permission>();
+    for (PermissionGroup group : groups) {
+      permissions.addAll(getItemsOfGroup(group));
     }
+    generateReport(rows, permissions, groups);
+  }
 
-    @Override
-    public final PermissionGroup getGroupOfItem(Permission item) {
-        return item.group;
-    }
+  @Override
+  public final PermissionGroup getGroupOfItem(Permission item) {
+    return item.group;
+  }
 
-    @Override
-    public final Collection<Permission> getItemsOfGroup(PermissionGroup group) {
-        LinkedList<Permission> res = new LinkedList<Permission>();
-        for (Permission p : group.getPermissions()) {
-            if (p.getEnabled()) {
-                res.add(p);
-            }
-        }
-        return res;
+  @Override
+  public final Collection<Permission> getItemsOfGroup(PermissionGroup group) {
+    LinkedList<Permission> res = new LinkedList<Permission>();
+    for (Permission p : group.getPermissions()) {
+      if (p.getEnabled()) {
+        res.add(p);
+      }
     }
+    return res;
+  }
 
-    @Override
-    public final String getGroupTitle(PermissionGroup group) {
-        return group.title.toString();
-    }
+  @Override
+  public final String getGroupTitle(PermissionGroup group) {
+    return group.title.toString();
+  }
 
-    @Override
-    public final String getColumnTitle(Permission item) {
-        return item.name;
-    }
+  @Override
+  public final String getColumnTitle(Permission item) {
+    return item.name;
+  }
 }

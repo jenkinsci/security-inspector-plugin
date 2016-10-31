@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,56 +38,56 @@ import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public class JobReport extends PermissionReport<TopLevelItem,Boolean> {
+public class JobReport extends PermissionReport<TopLevelItem, Boolean> {
 
-    @Override
-    protected Boolean getEntryReport(TopLevelItem column, Permission item) {
-        Item i = getInstance().getItemByFullName(column.getFullName());
-        if (i == null) { 
-            // Item is not accessible anymore, so we cannot check it's permission
-            return false;
-        }
-        return i.hasPermission(item);
+  @Override
+  protected Boolean getEntryReport(TopLevelItem column, Permission item) {
+    Item i = getInstance().getItemByFullName(column.getFullName());
+    if (i == null) {
+      // Item is not accessible anymore, so we cannot check it's permission
+      return false;
     }
-    
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public static Jenkins getInstance() throws IllegalStateException {
-        Jenkins instance = Jenkins.getInstance();
-        if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-        }
-        return instance;
-    }
-    
-     public final void generateReport(Set<TopLevelItem> rows) {
-         Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
-         groups.remove(PermissionGroup.get(Permission.class));
-         groups.remove(PermissionGroup.get(Hudson.class));
-         groups.remove(PermissionGroup.get(Computer.class));
-         groups.remove(PermissionGroup.get(View.class));
-         
-         super.generateReport(rows, groups);
-     }
-     
-     public static JobReport createReport(Set<TopLevelItem> rows) {
-         JobReport report = new JobReport();
-         report.generateReport(rows);
-         return report;
-     }
+    return i.hasPermission(item);
+  }
 
-    @Override
-    public String getRowColumnHeader() {
-        return Messages.JobReport_RowColumnHeader();
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public static Jenkins getInstance() throws IllegalStateException {
+    Jenkins instance = Jenkins.getInstance();
+    if (instance == null) {
+      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
     }
+    return instance;
+  }
 
-    @Override
-    public String getRowTitle(TopLevelItem row) {
-        return row.getFullDisplayName();
-    }
+  public final void generateReport(Set<TopLevelItem> rows) {
+    Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+    groups.remove(PermissionGroup.get(Permission.class));
+    groups.remove(PermissionGroup.get(Hudson.class));
+    groups.remove(PermissionGroup.get(Computer.class));
+    groups.remove(PermissionGroup.get(View.class));
 
-    @Override
-    public boolean isEntryReportOk(TopLevelItem row, Permission item, Boolean report) {
-        return report != null ? report.booleanValue() : false;
-    }
+    super.generateReport(rows, groups);
+  }
+
+  public static JobReport createReport(Set<TopLevelItem> rows) {
+    JobReport report = new JobReport();
+    report.generateReport(rows);
+    return report;
+  }
+
+  @Override
+  public String getRowColumnHeader() {
+    return Messages.JobReport_RowColumnHeader();
+  }
+
+  @Override
+  public String getRowTitle(TopLevelItem row) {
+    return row.getFullDisplayName();
+  }
+
+  @Override
+  public boolean isEntryReportOk(TopLevelItem row, Permission item, Boolean report) {
+    return report != null ? report : false;
+  }
 }

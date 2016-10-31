@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,52 +38,52 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 public class SecurityInspectorHelper {
 
-    /*package*/ SecurityInspectorHelper() {
+  /*package*/ SecurityInspectorHelper() {
+  }
+
+  public Collection<User> getPossibleUsers() {
+    SortedSet<User> sortedUser = new TreeSet<User>(getComparatorUser());
+    sortedUser.addAll(User.getAll());
+    return sortedUser;
+  }
+
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public static Jenkins getInstance() throws IllegalStateException {
+    Jenkins instance = Jenkins.getInstance();
+    if (instance == null) {
+      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
     }
-       
-    public Collection<User> getPossibleUsers() {
-        SortedSet<User> sortedUser = new TreeSet<User>(getComparatorUser());
-        sortedUser.addAll(User.getAll());
-        return sortedUser;
-    }
-    
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public static Jenkins getInstance() throws IllegalStateException {
-        Jenkins instance = Jenkins.getInstance();
-        if (instance == null) {
-            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-        }
-        return instance;
-    }
-    
-    public List<Item> getPossibleJobs() {
-        return getInstance().getAllItems();
-    }
-    
-    public String getDisplayName(User user) {
-        return user != null ? user.getFullName() + " ("+ user.getId() + ")" : "";
-    }
-    
-    public String getJobName(Item item) {
-        return item != null ? item.getFullName() : "*";
-    }
-    
-    public Comparator<User> getComparatorUser() {
-        return new Comparator<User>() {
-            @Override
-            public int compare(User o1, User o2) {
-                return o1.getId().compareTo(o2.getId());
-            }
-        };
-    }
-    
-    public Comparator<Item> getComparatorItem() {
-        return new Comparator<Item>() {
-            @Override
-            public int compare(Item o1, Item o2) {
-                return o1.getFullName().compareTo(o2.getFullName());
-            }
-        };
-    }
+    return instance;
+  }
+
+  public List<Item> getPossibleJobs() {
+    return getInstance().getAllItems();
+  }
+
+  public String getDisplayName(User user) {
+    return user != null ? user.getFullName() + " (" + user.getId() + ")" : "";
+  }
+
+  public String getJobName(Item item) {
+    return item != null ? item.getFullName() : "*";
+  }
+
+  public Comparator<User> getComparatorUser() {
+    return new Comparator<User>() {
+      @Override
+      public int compare(User o1, User o2) {
+        return o1.getId().compareTo(o2.getId());
+      }
+    };
+  }
+
+  public Comparator<Item> getComparatorItem() {
+    return new Comparator<Item>() {
+      @Override
+      public int compare(Item o1, Item o2) {
+        return o1.getFullName().compareTo(o2.getFullName());
+      }
+    };
+  }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2015-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,26 +33,25 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class UserContextCache {
-  
+
   Map<String, UserContext> contextMap = new HashMap<String, UserContext>();
-    
-    public synchronized boolean containsKey(String sessionId) {
-        return contextMap.containsKey(sessionId);
+
+  public synchronized boolean containsKey(String sessionId) {
+    return contextMap.containsKey(sessionId);
+  }
+
+  @CheckForNull
+  public synchronized UserContext get(String sessionId) {
+    return contextMap.get(sessionId);
+  }
+
+  public synchronized void flush(String sessionId) {
+    if (contextMap.containsKey(sessionId)) {
+      contextMap.remove(sessionId);
     }
-    
-    @CheckForNull
-    public synchronized UserContext get(String sessionId) {
-        return contextMap.get(sessionId);
-    }
-    
-    public synchronized void flush(String sessionId) {
-        if (contextMap.containsKey(sessionId)) {
-            contextMap.remove(sessionId);
-        }      
-    }
-    
-    public synchronized void put (String sessionId, UserContext context) {
-        contextMap.put(getSessionId(), context);
-    }
-  
+  }
+
+  public synchronized void put(String sessionId, UserContext context) {
+    contextMap.put(getSessionId(), context);
+  }
 }
