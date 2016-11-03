@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,92 +39,79 @@ import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class UserFilter {
-    
-    /**
-     * Include regex string.
-     */
-    private String includeRegex4User;
-    
-    /**
-     * Compiled include pattern from the includeRegex string.
-     */
-    private transient Pattern includePattern4User;
 
-    /**
-     * Filter by enabled/disabled status of jobs.
-     * Null for no filter, true for enabled-only, false for disabled-only.
-     */
-    private Boolean statusFilter4User;
-    
-    /**
-     * Constructs empty filter.
-     */
-    public UserFilter() {
-        this.statusFilter4User = null;
-        this.includeRegex4User = null;        
-    }
-    
-      /**
-     * Constructs filter from StaplerRequest.
-     * This constructor is just a modified copy of ListView's configure method.
-     * @param req Stapler Request
-     * @throws hudson.model.Descriptor.FormException
-     * @throws IOException
-     * @throws ServletException 
-     */
-    public UserFilter(StaplerRequest req) 
-            throws Descriptor.FormException, IOException, ServletException {
-        if (req.getParameter("useincluderegex4user") != null) {
-            includeRegex4User = Util.nullify(req.getParameter("_.includeRegex4User"));
-            if (includeRegex4User == null)
-                includePattern4User = null;
-            else
-                try {
-                    includePattern4User = Pattern.compile(includeRegex4User);
-                } catch (PatternSyntaxException exception) {
-                    FormValidation.error(exception.getDescription());
+  /**
+   * Include regex string.
+   */
+  private String includeRegex4User;
+
+  /**
+   * Compiled include pattern from the includeRegex string.
+   */
+  private transient Pattern includePattern4User;
+
+  /**
+   * Constructs empty filter.
+   */
+  public UserFilter() {
+    this.includeRegex4User = null;
+  }
+
+  /**
+   * Constructs filter from StaplerRequest. This constructor is just a modified
+   * copy of ListView's configure method.
+   *
+   * @param req Stapler Request
+   * @throws hudson.model.Descriptor.FormException
+   * @throws IOException
+   * @throws ServletException
+   */
+  public UserFilter(StaplerRequest req)
+          throws Descriptor.FormException, IOException, ServletException {
+    if (req.getParameter("useincluderegex4user") != null) {
+      includeRegex4User = Util.nullify(req.getParameter("_.includeRegex4User"));
+      if (includeRegex4User == null) {
+        includePattern4User = null;
+      } else {
+        try {
+          includePattern4User = Pattern.compile(includeRegex4User);
+        } catch (PatternSyntaxException exception) {
+          FormValidation.error(exception.getDescription());
         }
-        } else {
-            includeRegex4User = null;
-            includePattern4User = null;
-        }
+      }
+    } else {
+      includeRegex4User = null;
+      includePattern4User = null;
     }
-    
-    public List<User> doFilter() {
-        SortedSet<String> names = new TreeSet<String>();
-    
-        for (User user : User.getAll()) {
-            String userId = user.getId();
-            if (includePattern4User == null){
-              names.add(userId);
-            }
-            else if (includePattern4User.matcher(userId).matches()) {
-                names.add(userId);
-            } 
-        }
-  
-        Boolean localStatusFilter = this.statusFilter4User; // capture the value to isolate us from concurrent update
-        List<User> items = new ArrayList<User>(names.size());
-        for (String n : names) {
-            User item = User.get(n, false, null);
-            // Add if no status filter or filter matches enabled/disabled status:
-            if(item!=null && (localStatusFilter == null)) {
-                items.add(item);
-            }
-        }      
-        return items;
-    }
-  
-   
-    public Pattern getIncludePattern() {
-        return includePattern4User;
+  }
+
+  public List<User> doFilter() {
+    SortedSet<String> names = new TreeSet<String>();
+
+    for (User user : User.getAll()) {
+      String userId = user.getId();
+      if (includePattern4User == null) {
+        names.add(userId);
+      } else if (includePattern4User.matcher(userId).matches()) {
+        names.add(userId);
+      }
     }
 
-    public String getIncludeRegex() {
-        return includeRegex4User;
+    List<User> items = new ArrayList<User>(names.size());
+    for (String n : names) {
+      User item = User.get(n, false, null);
+      if (item != null) {
+        items.add(item);
+      }
     }
+    return items;
+  }
 
-    public Boolean getStatusFilter() {
-        return statusFilter4User;
-    }
+  public Pattern getIncludePattern() {
+    return includePattern4User;
+  }
+
+  public String getIncludeRegex() {
+    return includeRegex4User;
+  }
 }

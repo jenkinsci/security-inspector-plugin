@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,62 +35,70 @@ import org.apache.commons.collections.map.MultiKeyMap;
 
 public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, TEntryReport> {
 
-    private MultiKeyMap entries;
-    private Set<TColumnGroup> groups;
-    private Set<TRow> rows;
-    private Set<TColumnItem> columns;
-    
-    /*package*/ 
-    SecurityInspectorReport() {
-    }
+  private MultiKeyMap entries;
+  private Set<TColumnGroup> groups;
+  private Set<TRow> rows;
+  private Set<TColumnItem> columns;
 
-    public MultiKeyMap getEntries() {
-        return entries;
-    }
+  /*package*/
+  SecurityInspectorReport() {
+  }
 
-    public Set<TColumnGroup> getGroups() {
-        return groups;
-    }
+  public MultiKeyMap getEntries() {
+    return entries;
+  }
 
-    public Set<TRow> getRows() {
-        return rows;
-    }
+  public Set<TColumnGroup> getGroups() {
+    return groups;
+  }
 
-    public Set<TColumnItem> getColumns() {
-        return columns;
+  public Set<TRow> getRows() {
+    return rows;
+  }
+
+  public Set<TColumnItem> getColumns() {
+    return columns;
+  }
+
+  public final void generateReport(Set<TRow> rows, Set<TColumnItem> columns, Set<TColumnGroup> groups) {
+    this.entries = new MultiKeyMap();
+    this.groups = new HashSet<TColumnGroup>(groups);
+    SortedSet<TRow> sortedRow = new TreeSet<TRow>(getComparator());
+    sortedRow.addAll(rows);
+    this.rows = sortedRow;
+    this.columns = columns;
+
+    for (TRow row : rows) {
+      for (TColumnItem column : columns) {
+        entries.put(row, column, getEntryReport(row, column));
+      }
     }
-    
-    public final void generateReport(Set<TRow> rows, Set<TColumnItem> columns, Set<TColumnGroup> groups) {
-        this.entries = new MultiKeyMap();
-        this.groups = new HashSet<TColumnGroup>(groups);
-        SortedSet<TRow> sortedRow = new TreeSet<TRow>(getComparator());
-        sortedRow.addAll(rows);
-        this.rows = sortedRow;
-        this.columns = columns;
-        
-        for (TRow row : rows) {
-            for (TColumnItem column : columns) {
-                entries.put(row, column, getEntryReport(row, column));
-            }
-        }
-    }
-    
-    public Comparator<TRow> getComparator() {
-        return new Comparator<TRow>() {
-            public int compare(TRow o1, TRow o2) {
-                return getRowTitle(o1).compareTo(getRowTitle(o2));
-            }
-        };
-    }
-    
-    public abstract TColumnGroup getGroupOfItem(TColumnItem item);
-    public abstract Collection<TColumnItem> getItemsOfGroup(TColumnGroup group);
-    protected abstract TEntryReport getEntryReport(TRow row, TColumnItem item);
-    
-    // Layout management
-    public abstract String getRowColumnHeader();
-    public abstract @Nonnull String getRowTitle(TRow row);
-    public abstract String getGroupTitle(TColumnGroup group);
-    public abstract String getColumnTitle(TColumnItem item);
-    public abstract boolean isEntryReportOk(TRow row, TColumnItem item, TEntryReport report);
+  }
+
+  public Comparator<TRow> getComparator() {
+    return new Comparator<TRow>() {
+      @Override
+      public int compare(TRow o1, TRow o2) {
+        return getRowTitle(o1).compareTo(getRowTitle(o2));
+      }
+    };
+  }
+
+  public abstract TColumnGroup getGroupOfItem(TColumnItem item);
+
+  public abstract Collection<TColumnItem> getItemsOfGroup(TColumnGroup group);
+
+  protected abstract TEntryReport getEntryReport(TRow row, TColumnItem item);
+
+  // Layout management
+  public abstract String getRowColumnHeader();
+
+  public abstract @Nonnull
+  String getRowTitle(TRow row);
+
+  public abstract String getGroupTitle(TColumnGroup group);
+
+  public abstract String getColumnTitle(TColumnItem item);
+
+  public abstract boolean isEntryReportOk(TRow row, TColumnItem item, TEntryReport report);
 }

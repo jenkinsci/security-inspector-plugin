@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,8 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
@@ -60,360 +62,388 @@ import org.kohsuke.stapler.QueryParameter;
 @Extension
 public class SecurityInspectorAction extends ManagementLink {
 
-    private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
-    
-    public SecurityInspectorAction() {
-        this.contextMap = new UserContextCache();
-    } 
-    
-    protected Object readResolve() {
-        if (contextMap == null) {
-            contextMap = new UserContextCache();
-        }
-        return this;
-    }
-    
-    @Nonnull
-    transient UserContextCache contextMap;
+  private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
 
-    @Override
-    public String getIconFileName() {
-        return "secure.gif";
-    }
+  public SecurityInspectorAction() {
+    this.contextMap = new UserContextCache();
+  }
 
-    @Override
-    public String getDisplayName() {
-        return "Security Inspector";
-    }
-    
-    @Override
-    public String getDescription() {
-        return "Inspect permissions configured by Jenkins security settings";
-    }
+  protected Object readResolve() {
+    /*if (contextMap == null) {
+     contextMap = new UserContextCache();
+     }*/
+    return this;
+  }
 
-    @Override
-    public String getUrlName() {
-        return "security-inspector";
-    }
+  @Nonnull
+  transient UserContextCache contextMap;
 
-    public SecurityInspectorHelper getHelper() {
-        return helper;
+  @Override
+  public String getIconFileName() {
+    return "secure.gif";
+  }
+
+  @Override
+  public String getDisplayName() {
+    return "Security Inspector";
+  }
+
+  @Override
+  public String getDescription() {
+    return "Inspect permissions configured by Jenkins security settings";
+  }
+
+  @Override
+  public String getUrlName() {
+    return "security-inspector";
+  }
+
+  public SecurityInspectorHelper getHelper() {
+    return helper;
+  }
+
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public static Jenkins getInstance() throws IllegalStateException {
+    Jenkins instance = Jenkins.getInstance();
+    if (instance == null) {
+      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
     }
-    
-    public SecurityInspectorReport getReportJob() {
-        Set<TopLevelItem> items = getRequestedJobs();
-        User user = getRequestedUser();
-        JobReport report;
+    return instance;
+  }
+
+  public SecurityInspectorReport getReportJob() {
+    Set<TopLevelItem> items = getRequestedJobs();
+    User user = getRequestedUser();
+    JobReport report;
 
         // Impersonate to check the permission
-        
-        final Authentication auth;
+    final Authentication auth;
+    try {
+      auth = user.impersonate();
+    } catch (UsernameNotFoundException ex) {
+      return new JobReport();
+    }
+
+    SecurityContext initialContext = null;
+    try {
+      initialContext = hudson.security.ACL.impersonate(auth);
+      report = JobReport.createReport(items);
+    } finally {
+      if (initialContext != null) {
+        SecurityContextHolder.setContext(initialContext);
+      }
+    }
+    return report;
+  }
+
+  public SecurityInspectorReport getReportUser() {
+    Set<User> users = getRequestedUsers();
+    Item job = getRequestedJob();
+
+    UserReport report = UserReport.createReport(users, job);
+    return report;
+  }
+
+  public SecurityInspectorReport getReportSlave() {
+    Set<Computer> computers = getRequestedSlaves();
+    Set<Computer> slaves = new HashSet<Computer>();
+    for (Computer c : computers) {
+      Node slave = c.getNode();
+      if (slave != null) {
+        slaves.add(c);
+      }
+    }
+
+    User user = getRequestedUser();
+    SlaveReport report;
+
+    // Impersonate to check the permission
+    final Authentication auth;
+    try {
+      auth = user.impersonate();
+    } catch (UsernameNotFoundException ex) {
+      return new SlaveReport();
+    }
+
+    SecurityContext initialContext = null;
+    try {
+      initialContext = hudson.security.ACL.impersonate(auth);
+      report = SlaveReport.createReport(slaves);
+    } finally {
+      if (initialContext != null) {
+        SecurityContextHolder.setContext(initialContext);
+      }
+    }
+
+    return report;
+  }
+
+  private View getSourceView() {
+    for (View view : getInstance().getViews()) {
+      if (view instanceof AllView) {
+        return view;
+      }
+    }
+    throw new IllegalStateException("Cannot retrieve All view");
+  }
+
+  public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+    getInstance().checkPermission(Jenkins.ADMINISTER);
+    String selectedItem;
+    String valid;
+    StringBuilder b = new StringBuilder();
+    UserSubmit action = UserSubmit.fromRequest(req);
+
+    switch (action) {
+      case Submit4jobs:
+        valid = req.getParameter("_.includeRegex");
         try {
-          auth = user.impersonate();
-        } catch (UsernameNotFoundException ex) {
-          return new JobReport();
+          Pattern.compile(valid);
+        } catch (PatternSyntaxException exception) {
+          return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
         }
-        
-        SecurityContext initialContext = null;
-        try {
-            initialContext = hudson.security.ACL.impersonate(auth);
-            report = JobReport.createReport(items);
-        } finally {
-            if (initialContext != null) {
-                SecurityContextHolder.setContext(initialContext);
-            }
-        }
-        return report;
-    }
-
-    public SecurityInspectorReport getReportUser() {
-        Set<User> users = getRequestedUsers();
-        Item job = getRequestedJob();
-
-        UserReport report = UserReport.createReport(users, job);
-        return report;
-    }
-
-    public SecurityInspectorReport getReportSlave() {
-        Set<Computer> computers = getRequestedSlaves();
-        Set<Computer> slaves = new HashSet<Computer>();
-        for (Computer c : computers) {
-            Node slave = c.getNode();
-            if (slave != null) {
-                slaves.add(c);
-            }
-        }
-
-        User user = getRequestedUser();
-        SlaveReport report;
-
-        // Impersonate to check the permission
-        final Authentication auth;
-        try {
-          auth = user.impersonate();
-        } catch (UsernameNotFoundException ex) {
-          return new SlaveReport();
-        }
-
-        SecurityContext initialContext = null;
-        try {
-            initialContext = hudson.security.ACL.impersonate(auth);
-            report = SlaveReport.createReport(slaves);
-        } finally {
-            if (initialContext != null) {
-                SecurityContextHolder.setContext(initialContext);
-            }
-        }
-
-        return report;
-    }
-
-    private View getSourceView() {
-        for (View view : Jenkins.getInstance().getViews()) {
-            if (view instanceof AllView) {
-                return view;
-            }
-        }
-        throw new IllegalStateException("Cannot retrieve All view");
-    }
-
-    public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
-        String selectedItem;
-        String valid;
-        StringBuilder b = new StringBuilder();
-        UserSubmit action = UserSubmit.fromRequest(req);
-
-        switch (action) {
-            case Submit4jobs:
-                valid = req.getParameter("_.includeRegex");
-                try {
-                    Pattern.compile(valid);
-                } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
-                }
-                selectedItem = req.getParameter("selectedUser");
-                b.append("search_report_user_4_job");
-                View sourceView = getSourceView();
-                JobFilter filters = new JobFilter(req, sourceView);
-                updateSearchCache(filters, selectedItem);
-                break;
-              
-            case Submit4slaves:
-                valid = req.getParameter("_.includeRegex4Slave");
-                try {
-                    Pattern.compile(valid);
-                } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
-                }
-                selectedItem = req.getParameter("selectedUser");
-                b.append("search_report_user_4_slave");
-                SlaveFilter filter4slave = new SlaveFilter(req);
-                updateSearchCache(filter4slave, selectedItem);
-                break;
-              
-            case Submit4user:
-                valid = req.getParameter("_.includeRegex4User");
-                try {
-                    Pattern.compile(valid);
-                } catch (PatternSyntaxException exception) {
-                    return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector/error");
-                }
-                selectedItem = req.getParameter("selectedJobs");
-                b.append("search_report_job");
-                UserFilter filter4user = new UserFilter(req);
-                updateSearchCache(filter4user, selectedItem);
-                break;
-              
-            case GoToHP:
-                return HttpResponses.redirectTo(Jenkins.getActiveInstance().getRootUrl() + "security-inspector");
-              
-            default:
-                throw new IOException("Action " + action + " is not supported");
-        }
-
-        // Redirect to the search report page
-        String request = b.toString();
-        return HttpResponses.redirectTo(request);
-    }
-
-    public List<Item> doAutoCompleteJob(@QueryParameter String value) {
-        List<Item> c = new LinkedList<Item>();
-        List<Item> items = Jenkins.getInstance().getAllItems();
-        for (Item item : items) {
-            if (item.toString().toLowerCase().startsWith(value.toLowerCase())) {
-                c.add(item);
-            }
-        }
-        return c;
-    }
-
-    public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
-        Jenkins.getActiveInstance().checkPermission(Jenkins.ADMINISTER);
-        GoHome action = GoHome.fromRequest(req);
-        switch (action) {
-            case GoToJF:
-                rsp.sendRedirect("job-filter");
-                break;
-            case GoToSF:
-                rsp.sendRedirect("slave-filter");
-                break;
-            case GoToUF:
-                rsp.sendRedirect("user-filter");
-                break;
-                default:
-                throw new IOException("Action " + action + " is not supported");
-        }           
-    }
-    
-    /**
-     * Get Jobs/Slaves/Users from context
-     */
-    public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
-        UserContext context = contextMap.get(getSessionId());
+        selectedItem = req.getParameter("selectedUser");
+        b.append("search_report_user_4_job");
         View sourceView = getSourceView();
-        Set<TopLevelItem> res;
-        List<TopLevelItem> selectedJobs = context.getJobFilter().doFilter(Jenkins.getInstance().getAllItems(TopLevelItem.class), sourceView);
-        res = new HashSet(selectedJobs.size());
-        for (TopLevelItem item : selectedJobs) {
-            if (item != null) {
-                res.add(item);
-            }
+        JobFilter filters = new JobFilter(req, sourceView);
+        updateSearchCache(filters, selectedItem);
+        break;
+
+      case Submit4slaves:
+        valid = req.getParameter("_.includeRegex4Slave");
+        try {
+          Pattern.compile(valid);
+        } catch (PatternSyntaxException exception) {
+          return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
         }
-        return res;
-    }
-    
-    public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
-        UserContext context = contextMap.get(getSessionId());
-        Set<Computer> res;
-        List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
-        res = new HashSet<Computer>(selectedSlaves.size());
-        for (Computer item : selectedSlaves) {
-            if (item != null && item instanceof Computer) {
-                res.add((Computer) item);
-            }
+        selectedItem = req.getParameter("selectedUser");
+        b.append("search_report_user_4_slave");
+        SlaveFilter filter4slave = new SlaveFilter(req);
+        updateSearchCache(filter4slave, selectedItem);
+        break;
+
+      case Submit4user:
+        valid = req.getParameter("_.includeRegex4User");
+        try {
+          Pattern.compile(valid);
+        } catch (PatternSyntaxException exception) {
+          return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector/error");
         }
-        return res;
+        selectedItem = req.getParameter("selectedJobs");
+        b.append("search_report_job");
+        UserFilter filter4user = new UserFilter(req);
+        updateSearchCache(filter4user, selectedItem);
+        break;
+
+      case GoToHP:
+        return HttpResponses.redirectTo(getInstance().getRootUrl() + "security-inspector");
+
+      default:
+        throw new IOException("Action " + action + " is not supported");
     }
 
-    public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
-        UserContext context = contextMap.get(getSessionId());
-        Set<User> res;
-        List<User> selectedUsers = context.getUserFilter().doFilter();
-        res = new HashSet<User>(selectedUsers.size());
-        for (User item : selectedUsers) {
-            if (item != null && item instanceof User) {
-                res.add((User) item);
-            }
+    // Redirect to the search report page
+    String request = b.toString();
+    return HttpResponses.redirectTo(request);
+  }
+
+  public List<Item> doAutoCompleteJob(@QueryParameter String value) {
+    List<Item> c = new LinkedList<Item>();
+    List<Item> items = getInstance().getAllItems();
+    for (Item item : items) {
+      if (item.toString().toLowerCase().startsWith(value.toLowerCase())) {
+        c.add(item);
+      }
+    }
+    return c;
+  }
+
+  public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+    getInstance().checkPermission(Jenkins.ADMINISTER);
+    GoHome action = GoHome.fromRequest(req);
+    switch (action) {
+      case GoToJF:
+        rsp.sendRedirect("job-filter");
+        break;
+      case GoToSF:
+        rsp.sendRedirect("slave-filter");
+        break;
+      case GoToUF:
+        rsp.sendRedirect("user-filter");
+        break;
+      default:
+        throw new IOException("Action " + action + " is not supported");
+    }
+  }
+
+  /**
+   * Get Jobs/Slaves/Users from context
+   * @return res
+   */
+  public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
+    UserContext context = contextMap.get(getSessionId());
+    if (context == null) {
+      // TODO: 
+      throw HttpResponses.error(404, "Context have not been found");
+    }
+    View sourceView = getSourceView();
+    Set<TopLevelItem> res;
+    JobFilter jobfilter = context.getJobFilter();
+    List<TopLevelItem> selectedJobs = jobfilter.doFilter(getInstance().getAllItems(TopLevelItem.class), sourceView);
+    res = new HashSet(selectedJobs.size());
+    for (TopLevelItem item : selectedJobs) {
+      if (item != null) {
+        res.add(item);
+      }
+    }
+    return res;
+  }
+
+  public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
+    UserContext context = contextMap.get(getSessionId());
+    if (context == null) {
+      // TODO: 
+      throw HttpResponses.error(404, "Context have not been found");
+    }
+    Set<Computer> res;
+    List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
+    res = new HashSet<Computer>(selectedSlaves.size());
+    for (Computer item : selectedSlaves) {
+      if (item != null) {
+        res.add(item);
+      }
+    }
+    return res;
+  }
+
+  public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
+    UserContext context = contextMap.get(getSessionId());
+    if (context == null) {
+      // TODO: 
+      throw HttpResponses.error(404, "Context have not been found");
+    }
+    Set<User> res;
+    List<User> selectedUsers = context.getUserFilter().doFilter();
+    res = new HashSet<User>(selectedUsers.size());
+    for (User item : selectedUsers) {
+      if (item != null) {
+        res.add(item);
+      }
+    }
+    return res;
+  }
+
+  /**
+   * Get selected user/job from context
+   * @return user
+   */
+  public User getRequestedUser() throws HttpResponses.HttpResponseException {
+    UserContext context = contextMap.get(getSessionId());
+    if (context == null) {
+      // TODO: 
+      throw HttpResponses.error(404, "Context have not been found");
+    }
+    String userId = context.getItem();
+    User user = User.get(userId, false, null);
+    if (user == null) {
+      throw HttpResponses.error(404, "User " + userId + " does not exists");
+    }
+    return user;
+  }
+
+  public Item getRequestedJob() throws HttpResponses.HttpResponseException {
+    UserContext context = contextMap.get(getSessionId());
+    if (context == null) {
+      // TODO: 
+      throw HttpResponses.error(404, "Context have not been found");
+    }
+    String jobName = context.getItem();
+    Item job = getInstance().getItemByFullName(jobName, Item.class);
+    if (job == null) {
+      throw HttpResponses.error(404, "Job " + jobName + " does not exists");
+    }
+    return job;
+  }
+
+  /**
+   * Buttons: - Submit Jobs/Slaves/Users reports - Go to Home Page
+   */
+  enum UserSubmit {
+
+    Submit4jobs,
+    Submit4slaves,
+    Submit4user,
+    GoToHP;
+
+    static UserSubmit fromRequest(StaplerRequest req) throws IOException {
+      Map map = req.getParameterMap();
+      for (UserSubmit val : UserSubmit.values()) {
+        if (map.containsKey(val.toString())) {
+          return val;
         }
-        return res;
+      }
+      throw new IOException("Cannot find an action in the reqest");
     }
-    
-    /**
-     * Get selected user/job from context
-     */
-    public User getRequestedUser() throws HttpResponses.HttpResponseException {
-        UserContext context = contextMap.get(getSessionId());
-        String userId = context.getItem();
-        User user = User.get(userId, false, null);
-        if (user == null) {
-            throw HttpResponses.error(404, "User " + userId + " does not exists");
+  }
+
+  /**
+   * Buttons: Go to page with filters
+   */
+  enum GoHome {
+
+    GoToJF,
+    GoToSF,
+    GoToUF;
+
+    static GoHome fromRequest(StaplerRequest req) throws IOException {
+      Map map = req.getParameterMap();
+      for (GoHome val : GoHome.values()) {
+        if (map.containsKey(val.toString())) {
+          return val;
         }
-        return user;
+      }
+      throw new IOException("Cannot find an action in the reqest");
     }
+  }
 
-    public Item getRequestedJob() throws HttpResponses.HttpResponseException {
-        UserContext context = contextMap.get(getSessionId());
-        String jobName = context.getItem();
-        Item job = Jenkins.getInstance().getItemByFullName(jobName, Item.class);
-        if (job == null) {
-            throw HttpResponses.error(404, "Job " + jobName + " does not exists");
-        }
-        return job;
-    }
+  /**
+   * Gets identifier of the current session.
+   * @return Unique id of the current session.
+   */
+  public static String getSessionId() {
+    return Stapler.getCurrentRequest().getSession().getId();
+  }
 
-    /**
-     * Buttons:
-     * - Submit Jobs/Slaves/Users reports
-     * - Go to Home Page
-     */
-    enum UserSubmit {
+  public boolean hasConfiguredFilters() {
+    return contextMap.containsKey(getSessionId());
+  }
 
-        Submit4jobs,
-        Submit4slaves,
-        Submit4user,
-        GoToHP;
+  /**
+   * Cleans internal cache of JSON Objects for the session.
+   * @return Current Session Id
+   */
+  public String cleanCache() {
+    final String sessionId = getSessionId();
+    contextMap.flush(sessionId);
+    return sessionId;
+  }
 
-        static UserSubmit fromRequest(StaplerRequest req) throws IOException {
-            Map map = req.getParameterMap();
-            for (UserSubmit val : UserSubmit.values()) {
-                if (map.containsKey(val.toString())) {
-                    return val;
-                }
-            }
-            throw new IOException("Cannot find an action in the reqest");
-        }
-    }
-    
-    /**
-     * Buttons:
-     * Go to page with filters
-     */
-    enum GoHome {
+  public void updateSearchCache(JobFilter jobFilter, String item) {
+    cleanCache();
+    // Put Context to the map
+    contextMap.put(getSessionId(), new UserContext(jobFilter, item));
+  }
 
-        GoToJF,
-        GoToSF,
-        GoToUF;
+  public void updateSearchCache(SlaveFilter slaveFilter, String item) {
+    cleanCache();
+    // Put Context to the map
+    contextMap.put(getSessionId(), new UserContext(slaveFilter, item));
+  }
 
-        static GoHome fromRequest(StaplerRequest req) throws IOException {
-            Map map = req.getParameterMap();
-            for (GoHome val : GoHome.values()) {
-                if (map.containsKey(val.toString())) {
-                    return val;
-                }
-            }
-            throw new IOException("Cannot find an action in the reqest");
-        }
-    }
-    
-    /**
-     * Gets identifier of the current session.
-     * @return Unique id of the current session.
-     */
-    public static String getSessionId() {
-        return Stapler.getCurrentRequest().getSession().getId(); 
-    }
-    
-    public boolean hasConfiguredFilters() {
-        return contextMap.containsKey(getSessionId());
-    }
-    
-    /**
-     * Cleans internal cache of JSON Objects for the session.
-     * @todo Cleanup approach, replace for URL-based parameterization
-     * @return Current Session Id
-     */
-    public String cleanCache() {
-        final String sessionId = getSessionId();
-        contextMap.flush(sessionId);      
-        return sessionId;
-    }
-    
-    public void updateSearchCache(JobFilter jobFilter, String item) {
-        cleanCache();
-        // Put Context to the map
-        contextMap.put(getSessionId(), new UserContext(jobFilter, item));
-    }
-    
-    public void updateSearchCache(SlaveFilter slaveFilter, String item) {
-        cleanCache();
-        // Put Context to the map
-        contextMap.put(getSessionId(), new UserContext(slaveFilter, item));
-    }
-    
-    public void updateSearchCache(UserFilter userFilter, String item) {
-        cleanCache();
-        // Put Context to the map
-        contextMap.put(getSessionId(), new UserContext(userFilter, item));
-    }
+  public void updateSearchCache(UserFilter userFilter, String item) {
+    cleanCache();
+    // Put Context to the map
+    contextMap.put(getSessionId(), new UserContext(userFilter, item));
+  }
 }

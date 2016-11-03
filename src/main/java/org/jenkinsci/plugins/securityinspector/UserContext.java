@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright 2015-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,55 +27,51 @@ package org.jenkinsci.plugins.securityinspector;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-/**
- *
- * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
- */
 @Restricted(NoExternalUse.class)
 class UserContext {
-  
+
   private final JobFilter jobFilter;
   private final SlaveFilter slaveFilter;
   private final UserFilter userFilter;
   private final String item;
 
-    public UserContext(JobFilter jobFilter, String item) {
-        this.jobFilter = jobFilter;
-        this.item = item;
-        
-        this.slaveFilter = null;
-        this.userFilter = null;
-    }
-    
-    public UserContext(SlaveFilter slaveFilter, String item) {
-        this.slaveFilter = slaveFilter;
-        this.item = item;
-        
-        this.jobFilter = null;
-        this.userFilter = null;
-    }
-    
-    public UserContext(UserFilter userFilter, String item) {
-        this.userFilter = userFilter;
-        this.item = item;
-        
-        this.jobFilter = null;
-        this.slaveFilter = null;
-    }
-    
-    public JobFilter getJobFilter() {
-        return jobFilter;
-    }
-    
-    public SlaveFilter getSlaveFilter() {
-        return slaveFilter;
-    }
-    
-    public UserFilter getUserFilter() {
-        return userFilter;
-    }
-    
-    public String getItem() {
-        return item;
-    }
+  public UserContext(JobFilter jobFilter, String item) {
+    this.jobFilter = jobFilter;
+    this.item = item;
+
+    this.slaveFilter = null;
+    this.userFilter = null;
+  }
+
+  public UserContext(SlaveFilter slaveFilter, String item) {
+    this.slaveFilter = slaveFilter;
+    this.item = item;
+
+    this.jobFilter = null;
+    this.userFilter = null;
+  }
+
+  public UserContext(UserFilter userFilter, String item) {
+    this.userFilter = userFilter;
+    this.item = item;
+
+    this.jobFilter = null;
+    this.slaveFilter = null;
+  }
+
+  public JobFilter getJobFilter() {
+    return jobFilter;
+  }
+
+  public SlaveFilter getSlaveFilter() {
+    return slaveFilter;
+  }
+
+  public UserFilter getUserFilter() {
+    return userFilter;
+  }
+
+  public String getItem() {
+    return item;
+  }
 }
