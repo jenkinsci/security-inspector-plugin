@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -45,18 +46,8 @@ public class SlaveReport extends PermissionReport<Computer, Boolean> {
 
   @Override
   protected Boolean getEntryReport(Computer column, Permission item) {
-    AuthorizationStrategy strategy = getInstance().getAuthorizationStrategy();
+    AuthorizationStrategy strategy = JenkinsHelper.getInstanceOrFail().getAuthorizationStrategy();
     return strategy.getACL(column).hasPermission(item);
-  }
-
-  @Nonnull
-  @Restricted(NoExternalUse.class)
-  public static Jenkins getInstance() throws IllegalStateException {
-    Jenkins instance = Jenkins.getInstance();
-    if (instance == null) {
-      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-    }
-    return instance;
   }
 
   public final void generateReport(Set<Computer> rows) {

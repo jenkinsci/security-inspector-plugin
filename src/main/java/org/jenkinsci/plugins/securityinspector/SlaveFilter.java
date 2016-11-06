@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class SlaveFilter {
@@ -81,13 +82,14 @@ public class SlaveFilter {
   }
 
   public List<Computer> doFilter() {
+    final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
     SortedSet<String> names;
 
     synchronized (this) {
       names = new TreeSet<String>();
     }
 
-    for (Computer item : Jenkins.getInstance().getComputers()) {
+    for (Computer item : jenkins.getComputers()) {
       String itemName = item.getName();
 
       if (includePattern4Slave == null) {
@@ -99,7 +101,7 @@ public class SlaveFilter {
 
     List<Computer> items = new ArrayList<Computer>(names.size());
     for (String n : names) {
-      Computer item = Jenkins.getInstance().getComputer(n);
+      Computer item = jenkins.getComputer(n);
       // Add if no status filter or filter matches enabled/disabled status:
       if (item != null) {
         items.add(item);
