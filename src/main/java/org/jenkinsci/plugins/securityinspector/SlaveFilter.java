@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -71,16 +72,20 @@ public class SlaveFilter {
    * copy of ListView's configure method.
    *
    * @param req Stapler Request
+   * @throws Descriptor.FormException Form parameter issue
    */
   @Restricted(NoExternalUse.class)
-  public SlaveFilter(@Nonnull StaplerRequest req) {
+  public SlaveFilter(@Nonnull StaplerRequest req) throws Descriptor.FormException {
     if (req.getParameter("useincluderegex4slave") != null) {
       includeRegex4Slave = Util.nullify(req.getParameter("_.includeRegex4Slave"));
       if (includeRegex4Slave == null) {
         includePattern4Slave = null;
       } else {
-          // TODO: Bug, Pattern syntax exception is not handled
-        includePattern4Slave = Pattern.compile(includeRegex4Slave);
+          try {
+            includePattern4Slave = Pattern.compile(includeRegex4Slave);
+          } catch (PatternSyntaxException ex) {
+              throw new Descriptor.FormException("Invalid regular expression", ex, "includeRegex4Slave");
+          }
       }
     } else {
       includeRegex4Slave = null;
