@@ -224,8 +224,7 @@ public class SecurityInspectorAction extends ManagementLink {
         }
         selectedItem = req.getParameter("selectedUser");
         b.append("search_report_user_4_job");
-        View sourceView = getAllView();
-        JobFilter filters = new JobFilter(req, sourceView);
+        JobFilter filters = new JobFilter(req);
         updateSearchCache(filters, selectedItem);
         break;
 
@@ -317,9 +316,15 @@ public class SecurityInspectorAction extends ManagementLink {
       // TODO: 
       throw HttpResponses.error(404, "Context has not been found");
     }
-    View sourceView = getAllView();
+    
+    // TODO: Ideally the plugin should not depend on the AllView existense
+    final View sourceView = getAllView();
+    if (sourceView == null) {
+        throw HttpResponses.error(404, "Cannot find the All view in the Jenkins root");
+    }
+    
     JobFilter jobfilter = context.getJobFilter();
-    List<TopLevelItem> selectedJobs = jobfilter.doFilter(JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class), sourceView);
+    List<TopLevelItem> selectedJobs = jobfilter.doFilter(sourceView);
     final Set<TopLevelItem> res = new HashSet<>(selectedJobs.size());
     for (TopLevelItem item : selectedJobs) {
       if (item != null) {

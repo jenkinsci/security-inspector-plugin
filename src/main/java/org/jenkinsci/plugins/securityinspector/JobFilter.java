@@ -48,6 +48,9 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class JobFilter {
@@ -86,17 +89,16 @@ public class JobFilter {
     this.includeRegex = null;
   }
 
-  //TODO parentView is unused, bug?
   /**
    * Constructs filter from a StaplerRequest. 
    * This constructor is just a modified copy of ListView's configure method.
    *
    * @param req Stapler Request
-   * @param parentView Parent View, which has created filter
    * @throws Descriptor.FormException Missing or invalid field in the form
    * @throws ServletException Cannot retrieve submitted form in Stapler
    */
-  public JobFilter(@Nonnull StaplerRequest req, @Nonnull View parentView)
+  @Restricted(NoExternalUse.class)
+  public JobFilter(@Nonnull StaplerRequest req)
           throws Descriptor.FormException, ServletException {
     if (req.getParameter("useincluderegex") != null) {
       includeRegex = Util.nullify(req.getParameter("_.includeRegex"));
@@ -130,25 +132,17 @@ public class JobFilter {
     jobFilters = items;
   }
 
-  //TODO input is unused, bug?
   @Nonnull
-  public List<TopLevelItem> doFilter(@Nonnull List<TopLevelItem> input, @Nonnull View view) {
+  @Restricted(NoExternalUse.class)
+  public List<TopLevelItem> doFilter(@Nonnull View view) {
     SortedSet<String> names;
 
     synchronized (this) {
       names = new TreeSet<String>();
     }
 
-    final List<TopLevelItem> allItems;
-    final Jenkins jenkins;
-    if (view.getOwnerItemGroup() instanceof Jenkins) {
-      final ItemGroup<? extends TopLevelItem> ownerItemGroup = view.getOwnerItemGroup();
-      jenkins = ((Jenkins) ownerItemGroup);
-      allItems = jenkins.getAllItems(TopLevelItem.class);
-    } else {
-      // TODO: Handle folders?
-      return Collections.emptyList();
-    }
+    final List<TopLevelItem> allItems = new ArrayList<>(view.getAllItems());
+    final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();   
 
     if (includePattern != null) {
       for (Item item : allItems) {
@@ -165,7 +159,7 @@ public class JobFilter {
     }
 
     Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-    List<TopLevelItem> items = new ArrayList<TopLevelItem>(names.size());
+    List<TopLevelItem> items = new ArrayList<>(view.getAllItems());
     for (String n : names) {
       TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
       // Add if no status filter or filter matches enabled/disabled status:
