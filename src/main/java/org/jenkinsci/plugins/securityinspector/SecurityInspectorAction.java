@@ -193,10 +193,10 @@ public class SecurityInspectorAction extends ManagementLink {
   }
 
   @CheckForNull
-  private View getAllView() {
+  private AllView getAllView() {
     for (View view : JenkinsHelper.getInstanceOrFail().getViews()) {
       if (view instanceof AllView) {
-        return view;
+        return (AllView)view;
       }
     }
     return null;
@@ -323,7 +323,7 @@ public class SecurityInspectorAction extends ManagementLink {
     }
     
     // TODO: Ideally the plugin should not depend on the AllView existense
-    final View sourceView = getAllView();
+    final AllView sourceView = getAllView();
     if (sourceView == null) {
         throw HttpResponses.error(404, "Cannot find the All view in the Jenkins root");
     }

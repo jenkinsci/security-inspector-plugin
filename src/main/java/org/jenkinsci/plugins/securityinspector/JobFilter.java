@@ -26,6 +26,7 @@ package org.jenkinsci.plugins.securityinspector;
 
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.AllView;
 import hudson.model.Descriptor;
 import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
@@ -119,7 +120,7 @@ public class JobFilter {
     if (formData != null) {
       for (Object o : JSONArray.fromObject(formData)) {
         JSONObject jo = (JSONObject) o;
-        String kind = jo.getString("kind");
+        String kind = jo.getString("$class");
         Descriptor<ViewJobFilter> d = findByDescribableClassName(descriptors, kind);
         if (d != null) {
           items.add(d.newInstance(req, jo));
@@ -132,16 +133,19 @@ public class JobFilter {
     jobFilters = items;
   }
 
+  /**
+   * Filters jobs by the specified filter
+   * Due to the glitch in {@link View#getAllItems()} we always process all jobs independently from the view contents.
+   * @param view View, for which we retrieve the data
+   * @return List of the jobs matching the specified filters
+   */
   @Nonnull
   @Restricted(NoExternalUse.class)
-  public List<TopLevelItem> doFilter(@Nonnull View view) {
-    SortedSet<String> names;
+  public List<TopLevelItem> doFilter(@Nonnull AllView view) {
+    final SortedSet<String> names = new TreeSet<>();
 
-    synchronized (this) {
-      names = new TreeSet<String>();
-    }
-
-    final List<TopLevelItem> allItems = new ArrayList<>(view.getAllItems());
+    // TODO: Switch to View.getAllItems() once it behaves according to the spec
+    final List<TopLevelItem> allItems = JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class);
     final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();   
 
     if (includePattern != null) {
@@ -159,7 +163,7 @@ public class JobFilter {
     }
 
     Boolean localStatusFilter = this.statusFilter; // capture the value to isolate us from concurrent update
-    List<TopLevelItem> items = new ArrayList<>(view.getAllItems());
+    List<TopLevelItem> items = new ArrayList<>();
     for (String n : names) {
       TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
       // Add if no status filter or filter matches enabled/disabled status:
