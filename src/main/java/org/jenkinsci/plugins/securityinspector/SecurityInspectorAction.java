@@ -67,7 +67,7 @@ import org.kohsuke.stapler.QueryParameter;
 @Extension
 public class SecurityInspectorAction extends ManagementLink {
 
-  private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
+  private static final SecurityInspectorHelper helper = new SecurityInspectorHelper();
   
   @Nonnull
   transient UserContextCache contextMap;
@@ -106,7 +106,7 @@ public class SecurityInspectorAction extends ManagementLink {
   }
 
   /**
-   * Retrieves a helper class for the action
+   * Retrieves a helper class for the action UI.
    * @return Instance of the helper
    */
   @Nonnull
@@ -483,7 +483,7 @@ public class SecurityInspectorAction extends ManagementLink {
    * Gets identifier of the current session.
    * @return Unique id of the current session.
    * @exception IllegalStateException if this method is called on an
-     * invalidated session
+   * invalidated session
    */
   @Nonnull
   public static String getSessionId() throws IllegalStateException {

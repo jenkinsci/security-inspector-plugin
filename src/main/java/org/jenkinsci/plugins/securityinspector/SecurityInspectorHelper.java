@@ -33,21 +33,20 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-// TODO: Split to helper classes
-
+@Restricted(NoExternalUse.class)
 public class SecurityInspectorHelper {
 
   /*package*/ SecurityInspectorHelper() {
+      // Cannot be instantinated outside
   }
 
   @Nonnull
   public Collection<User> getPossibleUsers() {
-    SortedSet<User> sortedUser = new TreeSet<User>(getComparatorUser());
+    SortedSet<User> sortedUser = new TreeSet<>(getComparatorUser());
     sortedUser.addAll(User.getAll());
     return sortedUser;
   }
@@ -65,17 +64,6 @@ public class SecurityInspectorHelper {
   @Nonnull
   public String getDisplayName(@CheckForNull User user) {
     return user != null ? user.getFullName() + " (" + user.getId() + ")" : "";
-  }
-
-  ///TODO why '*'?
-  /**
-   * Retrieves display name of an item.
-   * @param item Item
-   * @return  User full name. Stub symbol if the item is {@code null}.
-   */
-  @Nonnull
-  public String getJobName(@CheckForNull Item item) {
-    return item != null ? item.getFullName() : "*";
   }
 
   @Nonnull
