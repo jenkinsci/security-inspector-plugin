@@ -24,6 +24,7 @@
 
 package org.jenkinsci.plugins.securityinspector;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AllView;
 import hudson.model.Computer;
@@ -36,6 +37,7 @@ import hudson.model.User;
 import hudson.model.View;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -50,6 +53,7 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -64,21 +68,23 @@ import org.kohsuke.stapler.QueryParameter;
 public class SecurityInspectorAction extends ManagementLink {
 
   private final SecurityInspectorHelper helper = new SecurityInspectorHelper();
+  
+  @Nonnull
+  transient UserContextCache contextMap;
 
   public SecurityInspectorAction() {
     this.contextMap = new UserContextCache();
   }
 
+  @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+          justification = "This method resolves data loaded from disk. This data bypasses constructor in XStream")
   protected Object readResolve() {
-    /*if (contextMap == null) {
+    if (contextMap == null) {
      contextMap = new UserContextCache();
-     }*/
+     }
     return this;
   }
-
-  @Nonnull
-  transient UserContextCache contextMap;
-
+  
   @Override
   public String getIconFileName() {
     return "secure.gif";
@@ -99,16 +105,23 @@ public class SecurityInspectorAction extends ManagementLink {
     return "security-inspector";
   }
 
+  /**
+   * Retrieves a helper class for the action
+   * @return Instance of the helper
+   */
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public SecurityInspectorHelper getHelper() {
     return helper;
   }
 
-  
-
+  //TODO: fix rawtype before the release
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public SecurityInspectorReport getReportJob() {
     Set<TopLevelItem> items = getRequestedJobs();
     User user = getRequestedUser();
-    JobReport report;
+    final JobReport report;
 
         // Impersonate to check the permission
     final Authentication auth;
@@ -118,6 +131,7 @@ public class SecurityInspectorAction extends ManagementLink {
       return new JobReport();
     }
 
+    //TODO: rework the logic to guarantee that report is initialized
     SecurityContext initialContext = null;
     try {
       initialContext = hudson.security.ACL.impersonate(auth);
@@ -130,6 +144,9 @@ public class SecurityInspectorAction extends ManagementLink {
     return report;
   }
 
+  //TODO: fix rawtype before the release
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public SecurityInspectorReport getReportUser() {
     Set<User> users = getRequestedUsers();
     Item job = getRequestedJob();
@@ -138,6 +155,9 @@ public class SecurityInspectorAction extends ManagementLink {
     return report;
   }
 
+  //TODO: Rename Slave => Node
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public SecurityInspectorReport getReportSlave() {
     Set<Computer> computers = getRequestedSlaves();
     Set<Computer> slaves = new HashSet<Computer>();
@@ -172,16 +192,20 @@ public class SecurityInspectorAction extends ManagementLink {
     return report;
   }
 
-  private View getSourceView() {
+  @CheckForNull
+  private View getAllView() {
     for (View view : JenkinsHelper.getInstanceOrFail().getViews()) {
       if (view instanceof AllView) {
         return view;
       }
     }
-    throw new IllegalStateException("Cannot retrieve All view");
+    return null;
   }
 
-  public HttpResponse doFilterSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public HttpResponse doFilterSubmit(@Nonnull StaplerRequest req) 
+          throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
     final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     
@@ -200,7 +224,7 @@ public class SecurityInspectorAction extends ManagementLink {
         }
         selectedItem = req.getParameter("selectedUser");
         b.append("search_report_user_4_job");
-        View sourceView = getSourceView();
+        View sourceView = getAllView();
         JobFilter filters = new JobFilter(req, sourceView);
         updateSearchCache(filters, selectedItem);
         break;
@@ -243,18 +267,27 @@ public class SecurityInspectorAction extends ManagementLink {
     return HttpResponses.redirectTo(request);
   }
 
-  public List<Item> doAutoCompleteJob(@QueryParameter String value) {
-    List<Item> c = new LinkedList<Item>();
+  @Nonnull
+  @Restricted(NoExternalUse.class)
+  public List<Item> doAutoCompleteJob(@CheckForNull @QueryParameter String value) {
+    if (value == null || StringUtils.isBlank(value)) {
+        return Collections.emptyList();
+    }  
+    
+    List<Item> proposedJobNames = new LinkedList<Item>();
     List<Item> items = JenkinsHelper.getInstanceOrFail().getAllItems();
     for (Item item : items) {
+      //TODO: toString() may cause issues with Full/Short job names
       if (item.toString().toLowerCase().startsWith(value.toLowerCase())) {
-        c.add(item);
+        proposedJobNames.add(item);
       }
     }
-    return c;
+    return proposedJobNames;
   }
 
-  public void doGoHome(StaplerRequest req, StaplerResponse rsp) throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+  @Restricted(NoExternalUse.class)
+  public void doGoHome(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) 
+          throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
     JenkinsHelper.getInstanceOrFail().checkPermission(Jenkins.ADMINISTER);
     GoHome action = GoHome.fromRequest(req);
     switch (action) {
@@ -273,20 +306,21 @@ public class SecurityInspectorAction extends ManagementLink {
   }
 
   /**
-   * Get Jobs/Slaves/Users from context
-   * @return res
+   * Get Jobs/Slaves/Users from the context
+   * @return res List of the requested jobs
    */
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
     UserContext context = contextMap.get(getSessionId());
     if (context == null) {
       // TODO: 
-      throw HttpResponses.error(404, "Context have not been found");
+      throw HttpResponses.error(404, "Context has not been found");
     }
-    View sourceView = getSourceView();
-    Set<TopLevelItem> res;
+    View sourceView = getAllView();
     JobFilter jobfilter = context.getJobFilter();
     List<TopLevelItem> selectedJobs = jobfilter.doFilter(JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class), sourceView);
-    res = new HashSet(selectedJobs.size());
+    final Set<TopLevelItem> res = new HashSet<>(selectedJobs.size());
     for (TopLevelItem item : selectedJobs) {
       if (item != null) {
         res.add(item);
@@ -295,15 +329,17 @@ public class SecurityInspectorAction extends ManagementLink {
     return res;
   }
 
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public Set<Computer> getRequestedSlaves() throws HttpResponses.HttpResponseException {
     UserContext context = contextMap.get(getSessionId());
     if (context == null) {
-      // TODO: 
-      throw HttpResponses.error(404, "Context have not been found");
+      // TODO:  What todo?
+      throw HttpResponses.error(404, "Context has not been found");
     }
-    Set<Computer> res;
+    
     List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
-    res = new HashSet<Computer>(selectedSlaves.size());
+    final Set<Computer> res = new HashSet<>(selectedSlaves.size());
     for (Computer item : selectedSlaves) {
       if (item != null) {
         res.add(item);
@@ -312,15 +348,17 @@ public class SecurityInspectorAction extends ManagementLink {
     return res;
   }
 
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
     UserContext context = contextMap.get(getSessionId());
     if (context == null) {
       // TODO: 
-      throw HttpResponses.error(404, "Context have not been found");
+      throw HttpResponses.error(404, "Context has not been found");
     }
-    Set<User> res;
+
     List<User> selectedUsers = context.getUserFilter().doFilter();
-    res = new HashSet<User>(selectedUsers.size());
+    final Set<User> res = new HashSet<>(selectedUsers.size());
     for (User item : selectedUsers) {
       if (item != null) {
         res.add(item);
@@ -331,32 +369,36 @@ public class SecurityInspectorAction extends ManagementLink {
 
   /**
    * Get selected user/job from context
-   * @return user
+   * @return user if exists. Otherwise an error will be returned
    */
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public User getRequestedUser() throws HttpResponses.HttpResponseException {
     UserContext context = contextMap.get(getSessionId());
     if (context == null) {
       // TODO: 
-      throw HttpResponses.error(404, "Context have not been found");
+      throw HttpResponses.error(404, "Context hae not been found");
     }
     String userId = context.getItem();
     User user = User.get(userId, false, null);
     if (user == null) {
-      throw HttpResponses.error(404, "User " + userId + " does not exists");
+      throw HttpResponses.error(404, "User " + userId + " does not exist");
     }
     return user;
   }
 
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public Item getRequestedJob() throws HttpResponses.HttpResponseException {
     UserContext context = contextMap.get(getSessionId());
     if (context == null) {
       // TODO: 
-      throw HttpResponses.error(404, "Context have not been found");
+      throw HttpResponses.error(404, "Context has not been found");
     }
     String jobName = context.getItem();
     Item job = JenkinsHelper.getInstanceOrFail().getItemByFullName(jobName, Item.class);
     if (job == null) {
-      throw HttpResponses.error(404, "Job " + jobName + " does not exists");
+      throw HttpResponses.error(404, "Job " + jobName + " does not exist");
     }
     return job;
   }
@@ -371,6 +413,9 @@ public class SecurityInspectorAction extends ManagementLink {
     Submit4user,
     GoToHP;
 
+    
+    // TODO: rework to a method returning null
+    @Nonnull
     static UserSubmit fromRequest(StaplerRequest req) throws IOException {
       Map map = req.getParameterMap();
       for (UserSubmit val : UserSubmit.values()) {
@@ -391,6 +436,8 @@ public class SecurityInspectorAction extends ManagementLink {
     GoToSF,
     GoToUF;
 
+    // TODO: rework to a method returning null
+    @Nonnull
     static GoHome fromRequest(StaplerRequest req) throws IOException {
       Map map = req.getParameterMap();
       for (GoHome val : GoHome.values()) {
@@ -402,11 +449,15 @@ public class SecurityInspectorAction extends ManagementLink {
     }
   }
 
+  //TODO: Handle IllegalStateException ?
   /**
    * Gets identifier of the current session.
    * @return Unique id of the current session.
+   * @exception IllegalStateException if this method is called on an
+     * invalidated session
    */
-  public static String getSessionId() {
+  @Nonnull
+  public static String getSessionId() throws IllegalStateException {
     return Stapler.getCurrentRequest().getSession().getId();
   }
 
@@ -418,25 +469,26 @@ public class SecurityInspectorAction extends ManagementLink {
    * Cleans internal cache of JSON Objects for the session.
    * @return Current Session Id
    */
+  @Nonnull
   public String cleanCache() {
     final String sessionId = getSessionId();
     contextMap.flush(sessionId);
     return sessionId;
   }
 
-  public void updateSearchCache(JobFilter jobFilter, String item) {
+  public void updateSearchCache(@Nonnull JobFilter jobFilter, @Nonnull String item) {
     cleanCache();
     // Put Context to the map
     contextMap.put(getSessionId(), new UserContext(jobFilter, item));
   }
 
-  public void updateSearchCache(SlaveFilter slaveFilter, String item) {
+  public void updateSearchCache(@Nonnull SlaveFilter slaveFilter, @Nonnull String item) {
     cleanCache();
     // Put Context to the map
     contextMap.put(getSessionId(), new UserContext(slaveFilter, item));
   }
 
-  public void updateSearchCache(UserFilter userFilter, String item) {
+  public void updateSearchCache(@Nonnull UserFilter userFilter, @Nonnull String item) {
     cleanCache();
     // Put Context to the map
     contextMap.put(getSessionId(), new UserContext(userFilter, item));

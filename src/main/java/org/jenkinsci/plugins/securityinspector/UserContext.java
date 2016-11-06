@@ -24,18 +24,24 @@
 
 package org.jenkinsci.plugins.securityinspector;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class UserContext {
 
+  @CheckForNull
   private final JobFilter jobFilter;
+  @CheckForNull
   private final SlaveFilter slaveFilter;
+  @CheckForNull
   private final UserFilter userFilter;
+  @Nonnull
   private final String item;
 
-  public UserContext(JobFilter jobFilter, String item) {
+  public UserContext(@Nonnull JobFilter jobFilter, @Nonnull String item) {
     this.jobFilter = jobFilter;
     this.item = item;
 
@@ -43,7 +49,7 @@ class UserContext {
     this.userFilter = null;
   }
 
-  public UserContext(SlaveFilter slaveFilter, String item) {
+  public UserContext(@Nonnull SlaveFilter slaveFilter, @Nonnull String item) {
     this.slaveFilter = slaveFilter;
     this.item = item;
 
@@ -51,7 +57,7 @@ class UserContext {
     this.userFilter = null;
   }
 
-  public UserContext(UserFilter userFilter, String item) {
+  public UserContext(@Nonnull UserFilter userFilter, @Nonnull String item) {
     this.userFilter = userFilter;
     this.item = item;
 
@@ -59,18 +65,22 @@ class UserContext {
     this.slaveFilter = null;
   }
 
+  @CheckForNull
   public JobFilter getJobFilter() {
     return jobFilter;
   }
 
+  @CheckForNull
   public SlaveFilter getSlaveFilter() {
     return slaveFilter;
   }
 
+  @CheckForNull
   public UserFilter getUserFilter() {
     return userFilter;
   }
 
+  @Nonnull
   public String getItem() {
     return item;
   }

@@ -50,7 +50,7 @@ public class SlaveReport extends PermissionReport<Computer, Boolean> {
     return strategy.getACL(column).hasPermission(item);
   }
 
-  public final void generateReport(Set<Computer> rows) {
+  public final void generateReport(@Nonnull Set<Computer> rows) {
     Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
     groups.remove(PermissionGroup.get(Permission.class));
     groups.remove(PermissionGroup.get(Hudson.class));
@@ -64,7 +64,7 @@ public class SlaveReport extends PermissionReport<Computer, Boolean> {
     super.generateReport(rows, groups);
   }
 
-  public static SlaveReport createReport(Set<Computer> rows) {
+  public static SlaveReport createReport(@Nonnull Set<Computer> rows) {
     SlaveReport report = new SlaveReport();
     report.generateReport(rows);
     return report;

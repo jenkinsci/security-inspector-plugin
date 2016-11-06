@@ -33,6 +33,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
@@ -40,9 +41,10 @@ import org.acegisecurity.userdetails.UsernameNotFoundException;
 
 public class UserReport extends PermissionReport<User, Boolean> {
 
-  Item job4report;
+  @Nonnull
+  final Item job4report;
 
-  private UserReport(Item job) {
+  private UserReport(@Nonnull Item job) {
     this.job4report = job;
   }
 
@@ -70,7 +72,7 @@ public class UserReport extends PermissionReport<User, Boolean> {
     return result;
   }
 
-  public final void generateReport(Set<User> rows) {
+  public final void generateReport(@Nonnull Set<User> rows) {
     Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
     groups.remove(PermissionGroup.get(Permission.class));
     groups.remove(PermissionGroup.get(Hudson.class));
@@ -80,7 +82,7 @@ public class UserReport extends PermissionReport<User, Boolean> {
     super.generateReport(rows, groups);
   }
 
-  public static UserReport createReport(Set<User> rows, Item job) {
+  public static UserReport createReport(@Nonnull Set<User> rows, @Nonnull Item job) {
     UserReport report = new UserReport(job);
     report.generateReport(rows);
     return report;

@@ -28,11 +28,19 @@ import hudson.Plugin;
 import hudson.util.FormValidation;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.CheckForNull;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 
 public class SecurityInspectorPlugin extends Plugin {
 
-  public FormValidation doCheckRegex(@QueryParameter String regex) {
+  @Restricted(NoExternalUse.class)
+  public FormValidation doCheckRegex(@CheckForNull @QueryParameter String regex) {
+    if (regex == null) {
+        return FormValidation.error("The specified regex is null");
+    }
+      
     try {
       Pattern.compile(regex);
     } catch (PatternSyntaxException exception) {

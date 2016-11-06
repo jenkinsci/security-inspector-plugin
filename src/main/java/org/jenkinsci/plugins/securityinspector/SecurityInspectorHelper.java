@@ -31,16 +31,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+// TODO: Split to helper classes
 
 public class SecurityInspectorHelper {
 
   /*package*/ SecurityInspectorHelper() {
   }
 
+  @Nonnull
   public Collection<User> getPossibleUsers() {
     SortedSet<User> sortedUser = new TreeSet<User>(getComparatorUser());
     sortedUser.addAll(User.getAll());
@@ -48,27 +53,32 @@ public class SecurityInspectorHelper {
   }
 
   @Nonnull
-  @Restricted(NoExternalUse.class)
-  public static Jenkins getInstance() throws IllegalStateException {
-    Jenkins instance = Jenkins.getInstance();
-    if (instance == null) {
-      throw new IllegalStateException("Jenkins has not been started, or was already shut down");
-    }
-    return instance;
-  }
-
   public List<Item> getPossibleJobs() {
-    return getInstance().getAllItems();
+    return JenkinsHelper.getInstanceOrFail().getAllItems();
   }
 
-  public String getDisplayName(User user) {
+  /**
+   * Retrieves display name of a user
+   * @param user User
+   * @return  User full name. Empty string if the user is {@code null}.
+   */
+  @Nonnull
+  public String getDisplayName(@CheckForNull User user) {
     return user != null ? user.getFullName() + " (" + user.getId() + ")" : "";
   }
 
-  public String getJobName(Item item) {
+  ///TODO why '*'?
+  /**
+   * Retrieves display name of an item.
+   * @param item Item
+   * @return  User full name. Stub symbol if the item is {@code null}.
+   */
+  @Nonnull
+  public String getJobName(@CheckForNull Item item) {
     return item != null ? item.getFullName() : "*";
   }
 
+  @Nonnull
   public Comparator<User> getComparatorUser() {
     return new Comparator<User>() {
       @Override
@@ -78,6 +88,7 @@ public class SecurityInspectorHelper {
     };
   }
 
+  @Nonnull
   public Comparator<Item> getComparatorItem() {
     return new Comparator<Item>() {
       @Override

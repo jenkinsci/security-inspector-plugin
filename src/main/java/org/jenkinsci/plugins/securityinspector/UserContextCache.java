@@ -27,6 +27,7 @@ package org.jenkinsci.plugins.securityinspector;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -34,24 +35,25 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 class UserContextCache {
 
-  Map<String, UserContext> contextMap = new HashMap<String, UserContext>();
+  final Map<String, UserContext> contextMap = new HashMap<String, UserContext>();
 
-  public synchronized boolean containsKey(String sessionId) {
+  public synchronized boolean containsKey(@Nonnull String sessionId) {
     return contextMap.containsKey(sessionId);
   }
 
   @CheckForNull
-  public synchronized UserContext get(String sessionId) {
+  public synchronized UserContext get(@Nonnull String sessionId) {
     return contextMap.get(sessionId);
   }
 
-  public synchronized void flush(String sessionId) {
+  public synchronized void flush(@Nonnull String sessionId) {
     if (contextMap.containsKey(sessionId)) {
       contextMap.remove(sessionId);
     }
   }
 
-  public synchronized void put(String sessionId, UserContext context) {
+  // TODO: Bug, replacement of the session ID
+  public synchronized void put(@Nonnull String sessionId, @Nonnull UserContext context) {
     contextMap.put(getSessionId(), context);
   }
 }

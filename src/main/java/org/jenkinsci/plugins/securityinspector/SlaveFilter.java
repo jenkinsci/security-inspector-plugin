@@ -33,28 +33,37 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
+
+// TODO: rename the class
 public class SlaveFilter {
 
   /**
    * Include regex string.
    */
-  private String includeRegex4Slave;
+  @CheckForNull
+  private final String includeRegex4Slave;
 
   /**
    * Compiled include pattern from the includeRegex string.
    */
-  private transient Pattern includePattern4Slave;
+  @CheckForNull
+  private final transient Pattern includePattern4Slave;
 
   /**
    * Constructs empty filter.
    */
   public SlaveFilter() {
     this.includeRegex4Slave = null;
+    this.includePattern4Slave = null;
   }
 
   /**
@@ -62,17 +71,15 @@ public class SlaveFilter {
    * copy of ListView's configure method.
    *
    * @param req Stapler Request
-   * @throws hudson.model.Descriptor.FormException
-   * @throws IOException
-   * @throws ServletException
    */
-  public SlaveFilter(StaplerRequest req)
-          throws Descriptor.FormException, IOException, ServletException {
+  @Restricted(NoExternalUse.class)
+  public SlaveFilter(@Nonnull StaplerRequest req) {
     if (req.getParameter("useincluderegex4slave") != null) {
       includeRegex4Slave = Util.nullify(req.getParameter("_.includeRegex4Slave"));
       if (includeRegex4Slave == null) {
         includePattern4Slave = null;
       } else {
+          // TODO: Bug, Pattern syntax exception is not handled
         includePattern4Slave = Pattern.compile(includeRegex4Slave);
       }
     } else {
@@ -81,10 +88,13 @@ public class SlaveFilter {
     }
   }
 
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public List<Computer> doFilter() {
     final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
     SortedSet<String> names;
 
+    // TODO: what, sync of the internal method?
     synchronized (this) {
       names = new TreeSet<String>();
     }
@@ -111,10 +121,12 @@ public class SlaveFilter {
     return items;
   }
 
+  @CheckForNull
   public Pattern getIncludePattern() {
     return includePattern4Slave;
   }
 
+  @CheckForNull
   public String getIncludeRegex() {
     return includeRegex4Slave;
   }

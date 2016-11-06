@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -51,24 +53,28 @@ import org.kohsuke.stapler.StaplerRequest;
 public class JobFilter {
 
   /**
-   * Jobs filters
+   * Jobs filters.
    */
+  @Nonnull
   private List<ViewJobFilter> jobFilters;
 
   /**
    * Include regex string.
    */
+  @CheckForNull
   private String includeRegex;
 
   /**
    * Compiled include pattern from the includeRegex string.
    */
+  @CheckForNull
   private transient Pattern includePattern;
 
   /**
-   * Filter by enabled/disabled status of jobs. Null for no filter, true for
+   * Filter by enabled/disabled status of jobs. {@code null} for no filter, true for
    * enabled-only, false for disabled-only.
    */
+  @CheckForNull
   private Boolean statusFilter;
 
   /**
@@ -80,18 +86,18 @@ public class JobFilter {
     this.includeRegex = null;
   }
 
+  //TODO parentView is unused, bug?
   /**
-   * Constructs filter from StaplerRequest. This constructor is just a modified
-   * copy of ListView's configure method.
+   * Constructs filter from a StaplerRequest. 
+   * This constructor is just a modified copy of ListView's configure method.
    *
    * @param req Stapler Request
    * @param parentView Parent View, which has created filter
-   * @throws hudson.model.Descriptor.FormException
-   * @throws IOException
-   * @throws ServletException
+   * @throws Descriptor.FormException Missing or invalid field in the form
+   * @throws ServletException Cannot retrieve submitted form in Stapler
    */
-  public JobFilter(StaplerRequest req, View parentView)
-          throws Descriptor.FormException, IOException, ServletException {
+  public JobFilter(@Nonnull StaplerRequest req, @Nonnull View parentView)
+          throws Descriptor.FormException, ServletException {
     if (req.getParameter("useincluderegex") != null) {
       includeRegex = Util.nullify(req.getParameter("_.includeRegex"));
       if (includeRegex == null) {
@@ -124,7 +130,9 @@ public class JobFilter {
     jobFilters = items;
   }
 
-  public List<TopLevelItem> doFilter(List<TopLevelItem> input, View view) {
+  //TODO input is unused, bug?
+  @Nonnull
+  public List<TopLevelItem> doFilter(@Nonnull List<TopLevelItem> input, @Nonnull View view) {
     SortedSet<String> names;
 
     synchronized (this) {
@@ -177,18 +185,22 @@ public class JobFilter {
     return items;
   }
 
+  @Nonnull
   public List<ViewJobFilter> getJobFilters() {
     return jobFilters;
   }
 
+  @CheckForNull
   public Pattern getIncludePattern() {
     return includePattern;
   }
 
+  @CheckForNull
   public String getIncludeRegex() {
     return includeRegex;
   }
 
+  @CheckForNull
   public Boolean getStatusFilter() {
     return statusFilter;
   }

@@ -51,7 +51,7 @@ public class JobReport extends PermissionReport<TopLevelItem, Boolean> {
     return i.hasPermission(item);
   }
 
-  public final void generateReport(Set<TopLevelItem> rows) {
+  public final void generateReport(@Nonnull Set<TopLevelItem> rows) {
     Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
     groups.remove(PermissionGroup.get(Permission.class));
     groups.remove(PermissionGroup.get(Hudson.class));
@@ -61,7 +61,8 @@ public class JobReport extends PermissionReport<TopLevelItem, Boolean> {
     super.generateReport(rows, groups);
   }
 
-  public static JobReport createReport(Set<TopLevelItem> rows) {
+  @Nonnull
+  public static JobReport createReport(@Nonnull Set<TopLevelItem> rows) {
     JobReport report = new JobReport();
     report.generateReport(rows);
     return report;
