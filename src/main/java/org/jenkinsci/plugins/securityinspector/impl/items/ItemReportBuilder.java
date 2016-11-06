@@ -21,41 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.securityinspector.impl.users.permissionsForComputers;
+package org.jenkinsci.plugins.securityinspector.impl.items;
 
-import hudson.Extension;
+import hudson.model.Item;
+import java.util.Comparator;
+import java.util.List;
+import javax.annotation.Nonnull;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 
 /**
- * Builds a report for {@link PermissionsForUsersReport}.
+ * Base class for building reports for particular items.
  * @author Oleg Nenashev
  */
-@Extension
-public class BuilderImpl extends ReportBuilder {
-
+public abstract class ItemReportBuilder extends ReportBuilder {
+   
     @Override
-    public Type getType() {
-        return Type.COMPUTER;
-    }
-
-    @Override
-    public String getIcon() {
-        return "fingerprint.png";
-    }
-
-    @Override
-    public String getIndex() {
-        return "slave-filter";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Single user, multiple nodes";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Display node permissions for the specified user";
+    public final Type getType() {
+        return Type.ITEM;
     }
     
+    @Nonnull
+    public List<Item> getPossibleJobs() {
+        return JenkinsHelper.getInstanceOrFail().getAllItems();
+    }
+
+    @Nonnull
+    public Comparator<Item> getComparatorItem() {
+        return new Comparator<Item>() {
+            @Override
+            public int compare(Item o1, Item o2) {
+                return o1.getFullName().compareTo(o2.getFullName());
+            }
+        };
+    }
 }

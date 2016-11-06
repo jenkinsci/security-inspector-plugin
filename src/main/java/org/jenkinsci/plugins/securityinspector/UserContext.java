@@ -33,7 +33,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
-class UserContext {
+public class UserContext {
 
   @CheckForNull
   private final JobFilter jobFilter;
