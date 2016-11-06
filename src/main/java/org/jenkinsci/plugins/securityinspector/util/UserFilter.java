@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.util;
 
 import hudson.Util;
 import hudson.model.Descriptor;
@@ -35,7 +35,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class UserFilter {
@@ -43,18 +47,21 @@ public class UserFilter {
   /**
    * Include regex string.
    */
-  private String includeRegex4User;
+  @CheckForNull
+  private final String includeRegex4User;
 
   /**
    * Compiled include pattern from the includeRegex string.
    */
-  private transient Pattern includePattern4User;
+  @CheckForNull
+  private final transient Pattern includePattern4User;
 
   /**
    * Constructs empty filter.
    */
   public UserFilter() {
     this.includeRegex4User = null;
+    this.includePattern4User = null;
   }
 
   /**
@@ -62,12 +69,10 @@ public class UserFilter {
    * copy of ListView's configure method.
    *
    * @param req Stapler Request
-   * @throws hudson.model.Descriptor.FormException
-   * @throws IOException
-   * @throws ServletException
+   * @throws Descriptor.FormException Form error
    */
-  public UserFilter(StaplerRequest req)
-          throws Descriptor.FormException, IOException, ServletException {
+  @Restricted(NoExternalUse.class)
+  public UserFilter(StaplerRequest req) throws Descriptor.FormException {
     if (req.getParameter("useincluderegex4user") != null) {
       includeRegex4User = Util.nullify(req.getParameter("_.includeRegex4User"));
       if (includeRegex4User == null) {
@@ -76,7 +81,7 @@ public class UserFilter {
         try {
           includePattern4User = Pattern.compile(includeRegex4User);
         } catch (PatternSyntaxException exception) {
-          FormValidation.error(exception.getDescription());
+          throw new Descriptor.FormException(exception.getDescription(), "includeRegex4User");
         }
       }
     } else {
@@ -85,6 +90,8 @@ public class UserFilter {
     }
   }
 
+  @Nonnull
+  @Restricted(NoExternalUse.class)
   public List<User> doFilter() {
     SortedSet<String> names = new TreeSet<String>();
 
@@ -107,10 +114,12 @@ public class UserFilter {
     return items;
   }
 
+  @CheckForNull
   public Pattern getIncludePattern() {
     return includePattern4User;
   }
 
+  @CheckForNull
   public String getIncludeRegex() {
     return includeRegex4User;
   }

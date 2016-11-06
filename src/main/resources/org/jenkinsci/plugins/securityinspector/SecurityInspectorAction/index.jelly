@@ -27,19 +27,37 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout permission="${app.ADMINISTER}" xmlns:local="local" norefresh="true">
         <st:include it="${app}" page="sidepanel.jelly"/>
-
+        
         <d:taglib uri="local">
             <!-- table to show a map -->
-            <d:tag name="feature">
-                <t:summary icon="${icon}"
-                       href="${href}" iconOnly="true">
+            <d:tag name="reportBuilder">
+                <t:summary icon="${icon}" href="${href}" iconOnly="true">
                     <div class="link">
-                        <a href="${href}">${title}</a>
+                        <a href="${href}/createReport">${title}</a>
                     </div>
                     <div style="color:gray; text-decoration:none;">
                         <d:invokeBody />
                     </div>
                 </t:summary>
+            </d:tag>
+        </d:taglib>
+        
+        <d:taglib uri="local">
+            <!-- table to show a map -->
+            <d:tag name="category">
+              
+              <j:set var="reportBuiders" value="${it.getReportBuilders(type)}"/>
+              <j:if test="${!reportBuiders.isEmpty()}">
+                <table style="padding-left: 2em;" id="management-links">
+                  <h2>${title}</h2>
+                  <j:forEach var="reportBuilder" items="${reportBuiders}">
+                    <local:reportBuilder icon="${reportBuilder.icon}" href="${reportBuilder.index}" 
+                                   title="${reportBuilder.displayName}">
+                        ${reportBuilder.description}
+                    </local:reportBuilder>
+                  </j:forEach>
+                </table>
+              </j:if>
             </d:tag>
         </d:taglib>
 
@@ -48,26 +66,9 @@
                 <img src="${imagesURL}/48x48/${it.iconFileName}" alt="${%Security Inspector}"/>
                 ${%Security Inspector}
             </h1>
-
-            <h2>${%Users}</h2>
-            <table style="padding-left: 2em;" id="management-links">
-                <local:feature icon="fingerprint.gif" href="job-filter" 
-                               title="${%Single user, multiple jobs}">
-                    ${%Display job permissions for the specified user}
-                </local:feature>
-                <local:feature icon="fingerprint.gif" href="slave-filter" 
-                               title="${%Single user, multiple nodes}">
-                    ${%Display node permissions for the specified user}
-                </local:feature>                        
-            </table>
-            
-            <h2>${%Jobs}</h2>
-            <table style="padding-left: 2em;" id="management-links">
-                  <local:feature icon="user.png" href="user-filter" 
-                               title="${%Multiple users, single job}">
-                    ${%Display users permissions for the specified job}
-                </local:feature> 
-            </table>
+            <local:category title="${%Users}" type="USER"/>
+            <local:category title="${%Jobs}" type="ITEM"/>
+            <local:category title="${%Computers}" type="COMPUTER"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

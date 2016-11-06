@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright (c) 2016 Oleg Nenashev.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.jenkinsci.plugins.securityinspector.util;
 
-package org.jenkinsci.plugins.securityinspector;
-
-import hudson.Plugin;
-import hudson.util.FormValidation;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
 
-public class SecurityInspectorPlugin extends Plugin {
+/**
+ * Utility helper for working with {@link Jenkins} instances.
+ * @author Oleg Nenashev
+ */
+@Restricted(NoExternalUse.class)
+public class JenkinsHelper {
 
-  @Restricted(NoExternalUse.class)
-  public FormValidation doCheckRegex(@CheckForNull @QueryParameter String regex) {
-    if (regex == null) {
-        return FormValidation.error("The specified regex is null");
+    private JenkinsHelper() {
+        // Construction is prohibited
     }
-      
-    try {
-      Pattern.compile(regex);
-    } catch (PatternSyntaxException exception) {
-      return FormValidation.error(exception.getDescription());
+
+    /**
+     * Retrieves the {@link Jenkins} instance.
+     *
+     * @return Jenkins instance
+     * @throws IllegalStateException Jenkins instance is not ready
+     */
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public static Jenkins getInstanceOrFail() throws IllegalStateException {
+        final Jenkins instance = Jenkins.getInstance();
+        if (instance == null) {
+            throw new IllegalStateException("Jenkins has not been started, or was already shut down");
+        }
+        return instance;
     }
-    return FormValidation.ok("Regular expression is valid");
-  }
+
 }

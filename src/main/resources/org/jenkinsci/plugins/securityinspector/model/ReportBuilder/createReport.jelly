@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout title="${%Security Inspector}" permission="${app.ADMINISTER}">
+        <st:include it="${app}" page="sidepanel.jelly"/>
+        <l:main-panel>
+          <h1>
+            <img src="${imagesURL}/48x48/secure.png" alt="${%Security Inspector}"/>
+            ${%Security Inspector}
+          </h1>
+          <h3>
+            ${it.description}
+          </h3>
+          
+          <!-- Report request form -->
+          <f:form method="post" name="config" action="filterSubmit">
+            <st:include page="configureReport.jelly" optional="false"/>
+            <f:block>
+              <f:submit name="Submit" value="${%Submit}" />
+              <f:submit name="Back" value="${%Back}" />
+            </f:block>
+          </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

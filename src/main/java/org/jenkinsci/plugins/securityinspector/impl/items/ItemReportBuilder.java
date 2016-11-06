@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014-2016 Ksenia Nenasheva <ks.nenasheva@gmail.com>
+ * Copyright (c) 2016 Oleg Nenashev.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.jenkinsci.plugins.securityinspector.impl.items;
 
-package org.jenkinsci.plugins.securityinspector;
+import hudson.model.Item;
+import java.util.Comparator;
+import java.util.List;
+import javax.annotation.Nonnull;
+import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 
-import hudson.Plugin;
-import hudson.util.FormValidation;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import javax.annotation.CheckForNull;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.QueryParameter;
-
-public class SecurityInspectorPlugin extends Plugin {
-
-  @Restricted(NoExternalUse.class)
-  public FormValidation doCheckRegex(@CheckForNull @QueryParameter String regex) {
-    if (regex == null) {
-        return FormValidation.error("The specified regex is null");
+/**
+ * Base class for building reports for particular items.
+ * @author Oleg Nenashev
+ */
+public abstract class ItemReportBuilder extends ReportBuilder {
+   
+    @Override
+    public final Type getType() {
+        return Type.ITEM;
     }
-      
-    try {
-      Pattern.compile(regex);
-    } catch (PatternSyntaxException exception) {
-      return FormValidation.error(exception.getDescription());
+    
+    @Nonnull
+    public List<Item> getPossibleJobs() {
+        return JenkinsHelper.getInstanceOrFail().getAllItems();
     }
-    return FormValidation.ok("Regular expression is valid");
-  }
+
+    @Nonnull
+    public Comparator<Item> getComparatorItem() {
+        return new Comparator<Item>() {
+            @Override
+            public int compare(Item o1, Item o2) {
+                return o1.getFullName().compareTo(o2.getFullName());
+            }
+        };
+    }
 }

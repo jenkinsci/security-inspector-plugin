@@ -27,31 +27,77 @@ package org.jenkinsci.plugins.securityinspector;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
+import org.jenkinsci.plugins.securityinspector.util.JobFilter;
+import org.jenkinsci.plugins.securityinspector.util.UserFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
-class UserContextCache {
+public class UserContextCache {
 
-  Map<String, UserContext> contextMap = new HashMap<String, UserContext>();
+  //TODO: fix concurrency issues
+  final Map<String, UserContext> contextMap = new HashMap<>();
 
-  public synchronized boolean containsKey(String sessionId) {
+  private static final UserContextCache INSTANCE = new UserContextCache();
+  
+  @Nonnull
+  public static UserContextCache getInstance() {
+      return INSTANCE;
+  }
+  
+  private UserContextCache() {
+      // OTHERS CANNOT INSTANTINATE
+  }
+  
+  public synchronized boolean containsKey(@Nonnull String sessionId) {
     return contextMap.containsKey(sessionId);
   }
 
   @CheckForNull
-  public synchronized UserContext get(String sessionId) {
+  public synchronized UserContext get(@Nonnull String sessionId) {
     return contextMap.get(sessionId);
   }
 
-  public synchronized void flush(String sessionId) {
+  public synchronized void flush(@Nonnull String sessionId) {
     if (contextMap.containsKey(sessionId)) {
       contextMap.remove(sessionId);
     }
   }
 
-  public synchronized void put(String sessionId, UserContext context) {
+  // TODO: Bug, replacement of the session ID
+  public synchronized void put(@Nonnull String sessionId, @Nonnull UserContext context) {
     contextMap.put(getSessionId(), context);
+  }
+  
+  /**
+   * Cleans internal cache of JSON Objects for the session.
+   * @return Current Session Id
+   */
+  @Nonnull
+  public static String cleanCache() {
+    final String sessionId = getSessionId();
+    INSTANCE.flush(sessionId);
+    return sessionId;
+  }
+  
+  public static void updateSearchCache(@Nonnull JobFilter jobFilter, @Nonnull String item) {
+    cleanCache();
+    // Put Context to the map
+    INSTANCE.put(getSessionId(), new UserContext(jobFilter, item));
+  }
+
+  public static void updateSearchCache(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
+    cleanCache();
+    // Put Context to the map
+    INSTANCE.put(getSessionId(), new UserContext(slaveFilter, item));
+  }
+
+  public static void updateSearchCache(@Nonnull UserFilter userFilter, @Nonnull String item) {
+    cleanCache();
+    // Put Context to the map
+    INSTANCE.put(getSessionId(), new UserContext(userFilter, item));
   }
 }
