@@ -317,13 +317,17 @@ public class SecurityInspectorAction extends ManagementLink {
       throw HttpResponses.error(404, "Context has not been found");
     }
     
+    final JobFilter jobfilter = context.getJobFilter();
+    if (jobfilter == null) {
+        throw HttpResponses.error(500, "The retrieved context does not contain job filter settings");
+    }
+    
     // TODO: Ideally the plugin should not depend on the AllView existense
     final View sourceView = getAllView();
     if (sourceView == null) {
         throw HttpResponses.error(404, "Cannot find the All view in the Jenkins root");
     }
-    
-    JobFilter jobfilter = context.getJobFilter();
+       
     List<TopLevelItem> selectedJobs = jobfilter.doFilter(sourceView);
     final Set<TopLevelItem> res = new HashSet<>(selectedJobs.size());
     for (TopLevelItem item : selectedJobs) {
@@ -343,7 +347,12 @@ public class SecurityInspectorAction extends ManagementLink {
       throw HttpResponses.error(404, "Context has not been found");
     }
     
-    List<Computer> selectedSlaves = context.getSlaveFilter().doFilter();
+    final SlaveFilter slaveFilter = context.getSlaveFilter();
+    if (slaveFilter == null) {
+        throw HttpResponses.error(500, "The retrieved context does not contain slave filter settings");
+    }
+    
+    List<Computer> selectedSlaves = slaveFilter.doFilter();
     final Set<Computer> res = new HashSet<>(selectedSlaves.size());
     for (Computer item : selectedSlaves) {
       if (item != null) {
@@ -361,8 +370,13 @@ public class SecurityInspectorAction extends ManagementLink {
       // TODO: 
       throw HttpResponses.error(404, "Context has not been found");
     }
+    
+    final UserFilter userFilter = context.getUserFilter();
+    if (userFilter == null) {
+        throw HttpResponses.error(500, "The retrieved context does not contain user filter settings");
+    }
 
-    List<User> selectedUsers = context.getUserFilter().doFilter();
+    List<User> selectedUsers = userFilter.doFilter();
     final Set<User> res = new HashSet<>(selectedUsers.size());
     for (User item : selectedUsers) {
       if (item != null) {
