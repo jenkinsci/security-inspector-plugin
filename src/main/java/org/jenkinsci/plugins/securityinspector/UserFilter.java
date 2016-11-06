@@ -69,10 +69,10 @@ public class UserFilter {
    * copy of ListView's configure method.
    *
    * @param req Stapler Request
-   * @throws FormValidation Form error
+   * @throws Descriptor.FormException Form error
    */
   @Restricted(NoExternalUse.class)
-  public UserFilter(StaplerRequest req) throws FormValidation {
+  public UserFilter(StaplerRequest req) throws Descriptor.FormException {
     if (req.getParameter("useincluderegex4user") != null) {
       includeRegex4User = Util.nullify(req.getParameter("_.includeRegex4User"));
       if (includeRegex4User == null) {
@@ -81,7 +81,7 @@ public class UserFilter {
         try {
           includePattern4User = Pattern.compile(includeRegex4User);
         } catch (PatternSyntaxException exception) {
-          throw FormValidation.error(exception.getDescription());
+          throw new Descriptor.FormException(exception.getDescription(), "includeRegex4User");
         }
       }
     } else {

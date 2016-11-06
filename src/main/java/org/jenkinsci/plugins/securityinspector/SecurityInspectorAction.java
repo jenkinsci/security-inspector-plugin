@@ -205,14 +205,14 @@ public class SecurityInspectorAction extends ManagementLink {
   @Nonnull
   @Restricted(NoExternalUse.class)
   public HttpResponse doFilterSubmit(@Nonnull StaplerRequest req) 
-          throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+          throws ServletException, Descriptor.FormException {
     final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
     jenkins.checkPermission(Jenkins.ADMINISTER);
     
     String selectedItem;
     String valid;
     StringBuilder b = new StringBuilder();
-    UserSubmit action = UserSubmit.fromRequest(req);
+    SubmittedOperation action = SubmittedOperation.fromRequest(req);
 
     switch (action) {
       case Submit4jobs:
@@ -258,7 +258,7 @@ public class SecurityInspectorAction extends ManagementLink {
         return HttpResponses.redirectTo(jenkins.getRootUrl() + "security-inspector");
 
       default:
-        throw new IOException("Action " + action + " is not supported");
+        throw new Descriptor.FormException("Action " + action + " is not supported", "submit");
     }
 
     // Redirect to the search report page
@@ -286,9 +286,9 @@ public class SecurityInspectorAction extends ManagementLink {
 
   @Restricted(NoExternalUse.class)
   public void doGoHome(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) 
-          throws IOException, UnsupportedEncodingException, ServletException, Descriptor.FormException {
+          throws IOException, ServletException, Descriptor.FormException {
     JenkinsHelper.getInstanceOrFail().checkPermission(Jenkins.ADMINISTER);
-    GoHome action = GoHome.fromRequest(req);
+    GoHomeDestination action = GoHomeDestination.fromRequest(req);
     switch (action) {
       case GoToJF:
         rsp.sendRedirect("job-filter");
@@ -425,7 +425,7 @@ public class SecurityInspectorAction extends ManagementLink {
   /**
    * Buttons: - Submit Jobs/Slaves/Users reports - Go to Home Page
    */
-  enum UserSubmit {
+  enum SubmittedOperation {
 
     Submit4jobs,
     Submit4slaves,
@@ -433,38 +433,48 @@ public class SecurityInspectorAction extends ManagementLink {
     GoToHP;
 
     
-    // TODO: rework to a method returning null
+    /**
+     * Locates the operation in the submitted form.
+     * @param req Request
+     * @return Located operation
+     * @throws Descriptor.FormException Cannot find any command field from the enum
+     */
     @Nonnull
-    static UserSubmit fromRequest(StaplerRequest req) throws IOException {
-      Map map = req.getParameterMap();
-      for (UserSubmit val : UserSubmit.values()) {
+    static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) throws Descriptor.FormException {
+      final Map<?, ?> map = req.getParameterMap();
+      for (SubmittedOperation val : SubmittedOperation.values()) {
         if (map.containsKey(val.toString())) {
           return val;
         }
       }
-      throw new IOException("Cannot find an action in the reqest");
+      throw new Descriptor.FormException("Cannot find an action in the request", "submit");
     }
   }
 
   /**
    * Buttons: Go to page with filters
    */
-  enum GoHome {
+  enum GoHomeDestination {
 
     GoToJF,
     GoToSF,
     GoToUF;
 
-    // TODO: rework to a method returning null
+    /**
+     * Locates the operation in the submitted form.
+     * @param req Request
+     * @return Located operation
+     * @throws Descriptor.FormException Cannot find any return page destination field from the enum
+     */
     @Nonnull
-    static GoHome fromRequest(StaplerRequest req) throws IOException {
-      Map map = req.getParameterMap();
-      for (GoHome val : GoHome.values()) {
+    static GoHomeDestination fromRequest(StaplerRequest req) throws Descriptor.FormException {
+      final Map<?, ?> map = req.getParameterMap();
+      for (GoHomeDestination val : GoHomeDestination.values()) {
         if (map.containsKey(val.toString())) {
           return val;
         }
       }
-      throw new IOException("Cannot find an action in the reqest");
+      throw new Descriptor.FormException("Cannot find an action in the request", "submit");
     }
   }
 
