@@ -22,36 +22,59 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.impl.users.permissionsForJobs;
 
+import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.TopLevelItem;
+import hudson.model.User;
 import hudson.model.View;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.acegisecurity.Authentication;
+import org.acegisecurity.context.SecurityContext;
+import org.acegisecurity.context.SecurityContextHolder;
+import org.acegisecurity.userdetails.UsernameNotFoundException;
+import org.jenkinsci.plugins.securityinspector.Messages;
 
-public class JobReport extends PermissionReport<TopLevelItem, Boolean> {
+public class UserReport extends PermissionReport<User, Boolean> {
 
-  @Override
-  protected Boolean getEntryReport(TopLevelItem column, Permission item) {
-    Item i = JenkinsHelper.getInstanceOrFail().getItemByFullName(column.getFullName());
-    if (i == null) {
-      // Item is not accessible anymore, so we cannot check it's permission
-      return false;
-    }
-    return i.hasPermission(item);
+  @Nonnull
+  final Item job4report;
+
+  private UserReport(@Nonnull Item job) {
+    this.job4report = job;
   }
 
-  public final void generateReport(@Nonnull Set<TopLevelItem> rows) {
+  @Override
+  protected Boolean getEntryReport(User column, Permission item) {
+    // Impersonate to check the permission
+    final Authentication auth;
+    Boolean result;
+
+    try {
+      auth = column.impersonate();
+    } catch (UsernameNotFoundException ex) {
+      return Boolean.FALSE;
+    }
+
+    SecurityContext initialContext = null;
+    try {
+      initialContext = hudson.security.ACL.impersonate(auth);
+      result = job4report.hasPermission(item);
+    } finally {
+      if (initialContext != null) {
+        SecurityContextHolder.setContext(initialContext);
+      }
+    }
+    return result;
+  }
+
+  public final void generateReport(@Nonnull Set<User> rows) {
     Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
     groups.remove(PermissionGroup.get(Permission.class));
     groups.remove(PermissionGroup.get(Hudson.class));
@@ -61,25 +84,24 @@ public class JobReport extends PermissionReport<TopLevelItem, Boolean> {
     super.generateReport(rows, groups);
   }
 
-  @Nonnull
-  public static JobReport createReport(@Nonnull Set<TopLevelItem> rows) {
-    JobReport report = new JobReport();
+  public static UserReport createReport(@Nonnull Set<User> rows, @Nonnull Item job) {
+    UserReport report = new UserReport(job);
     report.generateReport(rows);
     return report;
   }
 
   @Override
   public String getRowColumnHeader() {
-    return Messages.JobReport_RowColumnHeader();
+    return Messages.UserReport_RowColumnHeader();
   }
 
   @Override
-  public String getRowTitle(TopLevelItem row) {
-    return row.getFullDisplayName();
+  public String getRowTitle(User row) {
+    return row.getId();
   }
 
   @Override
-  public boolean isEntryReportOk(TopLevelItem row, Permission item, Boolean report) {
+  public boolean isEntryReportOk(User row, Permission item, Boolean report) {
     return report != null ? report : false;
   }
 }

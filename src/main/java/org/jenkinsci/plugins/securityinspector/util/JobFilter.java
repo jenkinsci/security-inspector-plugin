@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.util;
 
 import hudson.Util;
 import hudson.model.AbstractProject;

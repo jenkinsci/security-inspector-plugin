@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.impl.users.permissionsForComputers;
 
+import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
 import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.model.Item;
@@ -37,12 +38,14 @@ import hudson.security.PermissionGroup;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.securityinspector.Messages;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public class SlaveReport extends PermissionReport<Computer, Boolean> {
+/**
+ * Reports user permissions for a specified computer.
+ * @author Ksenia Nenasheva
+ */
+public class PermissionsForUsersReport extends PermissionReport<Computer, Boolean> {
 
   @Override
   protected Boolean getEntryReport(Computer column, Permission item) {
@@ -64,8 +67,8 @@ public class SlaveReport extends PermissionReport<Computer, Boolean> {
     super.generateReport(rows, groups);
   }
 
-  public static SlaveReport createReport(@Nonnull Set<Computer> rows) {
-    SlaveReport report = new SlaveReport();
+  public static PermissionsForUsersReport createReport(@Nonnull Set<Computer> rows) {
+    PermissionsForUsersReport report = new PermissionsForUsersReport();
     report.generateReport(rows);
     return report;
   }

@@ -24,8 +24,16 @@
 
 package org.jenkinsci.plugins.securityinspector;
 
+import org.jenkinsci.plugins.securityinspector.util.JobFilter;
+import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
+import org.jenkinsci.plugins.securityinspector.util.UserFilter;
+import org.jenkinsci.plugins.securityinspector.impl.users.permissionsForComputers.PermissionsForUsersReport;
+import org.jenkinsci.plugins.securityinspector.impl.users.permissionsForJobs.UserReport;
+import org.jenkinsci.plugins.securityinspector.impl.jobs.permissionsForUsers.JobReport;
+import org.jenkinsci.plugins.securityinspector.model.SecurityInspectorReport;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.AllView;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -37,6 +45,7 @@ import hudson.model.User;
 import hudson.model.View;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -54,6 +63,8 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
+import static org.jenkinsci.plugins.securityinspector.model.ReportBuilder.all;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -169,20 +180,20 @@ public class SecurityInspectorAction extends ManagementLink {
     }
 
     User user = getRequestedUser();
-    SlaveReport report;
+    PermissionsForUsersReport report;
 
     // Impersonate to check the permission
     final Authentication auth;
     try {
       auth = user.impersonate();
     } catch (UsernameNotFoundException ex) {
-      return new SlaveReport();
+      return new PermissionsForUsersReport();
     }
 
     SecurityContext initialContext = null;
     try {
       initialContext = hudson.security.ACL.impersonate(auth);
-      report = SlaveReport.createReport(slaves);
+      report = PermissionsForUsersReport.createReport(slaves);
     } finally {
       if (initialContext != null) {
         SecurityContextHolder.setContext(initialContext);
@@ -237,7 +248,7 @@ public class SecurityInspectorAction extends ManagementLink {
         }
         selectedItem = req.getParameter("selectedUser");
         b.append("search_report_user_4_slave");
-        SlaveFilter filter4slave = new SlaveFilter(req);
+        ComputerFilter filter4slave = new ComputerFilter(req);
         updateSearchCache(filter4slave, selectedItem);
         break;
 
@@ -285,6 +296,13 @@ public class SecurityInspectorAction extends ManagementLink {
         throw new IOException("Action " + action + " is not supported");
     }
   }
+  
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public List<ReportBuilder> getReportBuilders(@Nonnull String type) {
+        //TODO: Illegal argument handling
+        return ReportBuilder.all(ReportBuilder.Type.valueOf(type));
+    }
 
   /**
    * Get Jobs/Slaves/Users from the context
@@ -329,7 +347,7 @@ public class SecurityInspectorAction extends ManagementLink {
       throw HttpResponses.error(404, "Context has not been found");
     }
     
-    final SlaveFilter slaveFilter = context.getSlaveFilter();
+    final ComputerFilter slaveFilter = context.getSlaveFilter();
     if (slaveFilter == null) {
         throw HttpResponses.error(500, "The retrieved context does not contain slave filter settings");
     }
@@ -493,7 +511,7 @@ public class SecurityInspectorAction extends ManagementLink {
     contextMap.put(getSessionId(), new UserContext(jobFilter, item));
   }
 
-  public void updateSearchCache(@Nonnull SlaveFilter slaveFilter, @Nonnull String item) {
+  public void updateSearchCache(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
     cleanCache();
     // Put Context to the map
     contextMap.put(getSessionId(), new UserContext(slaveFilter, item));

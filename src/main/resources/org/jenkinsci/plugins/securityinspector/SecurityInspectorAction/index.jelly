@@ -42,12 +42,35 @@
                 </t:summary>
             </d:tag>
         </d:taglib>
+        
+        <d:taglib uri="local">
+            <!-- table to show a map -->
+            <d:tag name="category">
+              <h2>${title}</h2>
+              <j:set var="reportBuiders" value="${it.getReportBuilders(type)}"/>
+              <j:if test="${reportBuiders.isEmpty()}">
+                ${%No available reports for this type}
+              </j:if>
+              <j:if test="${reportBuiders.size() != 0}">
+                ${%Reports available: } ${reportBuiders.size()}
+              </j:if>
+            </d:tag>
+        </d:taglib>
 
         <l:main-panel>
             <h1>
                 <img src="${imagesURL}/48x48/${it.iconFileName}" alt="${%Security Inspector}"/>
                 ${%Security Inspector}
             </h1>
+
+            <local:category title="${%Users}" type="USER"/>
+            <local:category title="${%Jobs}" type="ITEM"/>
+            <local:category title="${%Computers}" type="COMPUTER"/>
+                
+            <h1>
+              Old UI
+            </h1>
+
 
             <h2>${%Users}</h2>
             <table style="padding-left: 2em;" id="management-links">

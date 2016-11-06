@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.model;
 
+import org.jenkinsci.plugins.securityinspector.model.SecurityInspectorReport;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.Collection;
@@ -35,7 +36,7 @@ import javax.annotation.Nonnull;
 public abstract class PermissionReport<TRow, TEntryReport>
         extends SecurityInspectorReport<TRow, PermissionGroup, Permission, TEntryReport> {
 
-    // TODO: WTF? Implicit overrides in implementations
+  // TODO: WTF? Implicit overrides in implementations
   public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<PermissionGroup> groups) {
     Set<Permission> permissions = new HashSet<Permission>();
     for (PermissionGroup group : groups) {

@@ -22,12 +22,11 @@
  * THE SOFTWARE.
  */
 
-package org.jenkinsci.plugins.securityinspector;
+package org.jenkinsci.plugins.securityinspector.util;
 
 import hudson.Util;
+import hudson.model.Computer;
 import hudson.model.Descriptor;
-import hudson.model.User;
-import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,30 +37,36 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class UserFilter {
+/**
+ * Filters {@link Computer}s according to the specified criteria.
+ * @author Ksenia Nenasheva
+ */
+public class ComputerFilter {
 
   /**
    * Include regex string.
    */
   @CheckForNull
-  private final String includeRegex4User;
+  private final String includeRegex4Slave;
 
   /**
    * Compiled include pattern from the includeRegex string.
    */
   @CheckForNull
-  private final transient Pattern includePattern4User;
+  private final transient Pattern includePattern4Slave;
 
   /**
    * Constructs empty filter.
    */
-  public UserFilter() {
-    this.includeRegex4User = null;
-    this.includePattern4User = null;
+  public ComputerFilter() {
+    this.includeRegex4Slave = null;
+    this.includePattern4Slave = null;
   }
 
   /**
@@ -69,58 +74,67 @@ public class UserFilter {
    * copy of ListView's configure method.
    *
    * @param req Stapler Request
-   * @throws Descriptor.FormException Form error
+   * @throws Descriptor.FormException Form parameter issue
    */
   @Restricted(NoExternalUse.class)
-  public UserFilter(StaplerRequest req) throws Descriptor.FormException {
-    if (req.getParameter("useincluderegex4user") != null) {
-      includeRegex4User = Util.nullify(req.getParameter("_.includeRegex4User"));
-      if (includeRegex4User == null) {
-        includePattern4User = null;
+  public ComputerFilter(@Nonnull StaplerRequest req) throws Descriptor.FormException {
+    if (req.getParameter("useincluderegex4slave") != null) {
+      includeRegex4Slave = Util.nullify(req.getParameter("_.includeRegex4Slave"));
+      if (includeRegex4Slave == null) {
+        includePattern4Slave = null;
       } else {
-        try {
-          includePattern4User = Pattern.compile(includeRegex4User);
-        } catch (PatternSyntaxException exception) {
-          throw new Descriptor.FormException(exception.getDescription(), "includeRegex4User");
-        }
+          try {
+            includePattern4Slave = Pattern.compile(includeRegex4Slave);
+          } catch (PatternSyntaxException ex) {
+              throw new Descriptor.FormException("Invalid regular expression", ex, "includeRegex4Slave");
+          }
       }
     } else {
-      includeRegex4User = null;
-      includePattern4User = null;
+      includeRegex4Slave = null;
+      includePattern4Slave = null;
     }
   }
 
   @Nonnull
   @Restricted(NoExternalUse.class)
-  public List<User> doFilter() {
-    SortedSet<String> names = new TreeSet<String>();
+  public List<Computer> doFilter() {
+    final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
+    SortedSet<String> names;
 
-    for (User user : User.getAll()) {
-      String userId = user.getId();
-      if (includePattern4User == null) {
-        names.add(userId);
-      } else if (includePattern4User.matcher(userId).matches()) {
-        names.add(userId);
+    // TODO: what, sync of the internal method?
+    synchronized (this) {
+      names = new TreeSet<String>();
+    }
+
+    for (Computer item : jenkins.getComputers()) {
+      String itemName = item.getName();
+
+      if (includePattern4Slave == null) {
+        names.add(itemName);
+      } else if (includePattern4Slave.matcher(itemName).matches()) {
+        names.add(itemName);
       }
     }
 
-    List<User> items = new ArrayList<User>(names.size());
+    List<Computer> items = new ArrayList<Computer>(names.size());
     for (String n : names) {
-      User item = User.get(n, false, null);
+      Computer item = jenkins.getComputer(n);
+      // Add if no status filter or filter matches enabled/disabled status:
       if (item != null) {
         items.add(item);
       }
     }
+
     return items;
   }
 
   @CheckForNull
   public Pattern getIncludePattern() {
-    return includePattern4User;
+    return includePattern4Slave;
   }
 
   @CheckForNull
   public String getIncludeRegex() {
-    return includeRegex4User;
+    return includeRegex4Slave;
   }
 }

@@ -24,6 +24,9 @@
 
 package org.jenkinsci.plugins.securityinspector;
 
+import org.jenkinsci.plugins.securityinspector.util.JobFilter;
+import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
+import org.jenkinsci.plugins.securityinspector.util.UserFilter;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
@@ -35,7 +38,7 @@ class UserContext {
   @CheckForNull
   private final JobFilter jobFilter;
   @CheckForNull
-  private final SlaveFilter slaveFilter;
+  private final ComputerFilter slaveFilter;
   @CheckForNull
   private final UserFilter userFilter;
   @Nonnull
@@ -49,7 +52,7 @@ class UserContext {
     this.userFilter = null;
   }
 
-  public UserContext(@Nonnull SlaveFilter slaveFilter, @Nonnull String item) {
+  public UserContext(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
     this.slaveFilter = slaveFilter;
     this.item = item;
 
@@ -71,7 +74,7 @@ class UserContext {
   }
 
   @CheckForNull
-  public SlaveFilter getSlaveFilter() {
+  public ComputerFilter getSlaveFilter() {
     return slaveFilter;
   }
 
