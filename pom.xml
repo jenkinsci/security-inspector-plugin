@@ -36,12 +36,12 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
   </scm>
-    <dependencies>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>role-strategy</artifactId>
-            <version>2.1.0</version>
-            <type>jar</type>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>role-strategy</artifactId>
+      <version>2.1.0</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>
