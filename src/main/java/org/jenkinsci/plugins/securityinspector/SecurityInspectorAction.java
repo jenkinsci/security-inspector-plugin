@@ -266,24 +266,6 @@ public class SecurityInspectorAction extends ManagementLink {
     return HttpResponses.redirectTo(request);
   }
 
-  @Nonnull
-  @Restricted(NoExternalUse.class)
-  public List<Item> doAutoCompleteJob(@CheckForNull @QueryParameter String value) {
-    if (value == null || StringUtils.isBlank(value)) {
-        return Collections.emptyList();
-    }  
-    
-    List<Item> proposedJobNames = new LinkedList<Item>();
-    List<Item> items = JenkinsHelper.getInstanceOrFail().getAllItems();
-    for (Item item : items) {
-      //TODO: toString() may cause issues with Full/Short job names
-      if (item.toString().toLowerCase().startsWith(value.toLowerCase())) {
-        proposedJobNames.add(item);
-      }
-    }
-    return proposedJobNames;
-  }
-
   @Restricted(NoExternalUse.class)
   public void doGoHome(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp) 
           throws IOException, ServletException, Descriptor.FormException {
