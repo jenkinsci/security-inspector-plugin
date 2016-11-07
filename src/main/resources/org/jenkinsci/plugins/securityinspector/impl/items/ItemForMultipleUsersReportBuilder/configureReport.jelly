@@ -25,7 +25,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:set var="_jobList" value="${it.possibleJobs}"/>      
   <f:entry title="${%Selected job: }"> 
-    <select name="selectedJobs" class="setting-input">
+    <select name="selectedJob" class="setting-input">
       <j:forEach var="job" items="${_jobList}">
         <f:option value="${job.fullName}">
           ${job.fullDisplayName}
