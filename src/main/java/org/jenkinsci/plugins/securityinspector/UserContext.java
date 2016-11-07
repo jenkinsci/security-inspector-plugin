@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jenkinsci.plugins.securityinspector;
 
 import org.jenkinsci.plugins.securityinspector.util.JobFilter;
@@ -35,56 +34,56 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class UserContext {
 
-  @CheckForNull
-  private final JobFilter jobFilter;
-  @CheckForNull
-  private final ComputerFilter slaveFilter;
-  @CheckForNull
-  private final UserFilter userFilter;
-  @Nonnull
-  private final String item;
+    @CheckForNull
+    private final JobFilter jobFilter;
+    @CheckForNull
+    private final ComputerFilter slaveFilter;
+    @CheckForNull
+    private final UserFilter userFilter;
+    @Nonnull
+    private final String item;
 
-  public UserContext(@Nonnull JobFilter jobFilter, @Nonnull String item) {
-    this.jobFilter = jobFilter;
-    this.item = item;
+    public UserContext(@Nonnull JobFilter jobFilter, @Nonnull String item) {
+        this.jobFilter = jobFilter;
+        this.item = item;
 
-    this.slaveFilter = null;
-    this.userFilter = null;
-  }
+        this.slaveFilter = null;
+        this.userFilter = null;
+    }
 
-  public UserContext(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
-    this.slaveFilter = slaveFilter;
-    this.item = item;
+    public UserContext(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
+        this.slaveFilter = slaveFilter;
+        this.item = item;
 
-    this.jobFilter = null;
-    this.userFilter = null;
-  }
+        this.jobFilter = null;
+        this.userFilter = null;
+    }
 
-  public UserContext(@Nonnull UserFilter userFilter, @Nonnull String item) {
-    this.userFilter = userFilter;
-    this.item = item;
+    public UserContext(@Nonnull UserFilter userFilter, @Nonnull String item) {
+        this.userFilter = userFilter;
+        this.item = item;
 
-    this.jobFilter = null;
-    this.slaveFilter = null;
-  }
+        this.jobFilter = null;
+        this.slaveFilter = null;
+    }
 
-  @CheckForNull
-  public JobFilter getJobFilter() {
-    return jobFilter;
-  }
+    @CheckForNull
+    public JobFilter getJobFilter() {
+        return jobFilter;
+    }
 
-  @CheckForNull
-  public ComputerFilter getSlaveFilter() {
-    return slaveFilter;
-  }
+    @CheckForNull
+    public ComputerFilter getSlaveFilter() {
+        return slaveFilter;
+    }
 
-  @CheckForNull
-  public UserFilter getUserFilter() {
-    return userFilter;
-  }
+    @CheckForNull
+    public UserFilter getUserFilter() {
+        return userFilter;
+    }
 
-  @Nonnull
-  public String getItem() {
-    return item;
-  }
+    @Nonnull
+    public String getItem() {
+        return item;
+    }
 }

@@ -86,15 +86,15 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
     public void processParameters(StaplerRequest req) throws Descriptor.FormException, ServletException {
         final String regex = req.getParameter("_.includeRegex4User");
         try {
-          Pattern.compile(regex);
+            Pattern.compile(regex);
         } catch (PatternSyntaxException exception) {
-          throw new Descriptor.FormException(exception, "includeRegex4User");
+            throw new Descriptor.FormException(exception, "includeRegex4User");
         }
         final String selectedItem = req.getParameter("selectedJob");
         UserFilter filter4user = new UserFilter(req);
         UserContextCache.updateSearchCache(filter4user, selectedItem);
     }
-    
+
     //TODO: fix rawtype before the release
     @Nonnull
     @Restricted(NoExternalUse.class)

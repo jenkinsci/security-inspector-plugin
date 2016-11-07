@@ -23,31 +23,31 @@
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Selected user:}">
-    <j:set var="_userList"  value="${it.possibleUsers}"/>
-    <select name="selectedUser" class="setting-input">
-      <j:forEach var="user" items="${_userList}">
-        <f:option value="${user.getId()}">
-          ${it.getDisplayName(user)}
-        </f:option>
-      </j:forEach>
-    </select> 
-  </f:entry>
-                    
-  <f:block> 
-    <f:entry>
-      <table width="100%"> 
-        <f:section title="${%Filters slaves to be reported}">                               
-                                                             
-          <f:optionalBlock name="useincluderegex4slave" title="${%Use a regular expression to include slaves into the view}"
-                                                     checked="${it.filters.includeRegex4Slave != null}" >
-            <f:entry title="${%Regular expression for slave}" field="includeRegex4Slave">
-              <f:textbox value="${it.filters.includeRegex4Slave}"
-                                                       checkUrl="'${rootURL}/plugin/security-inspector/checkRegex?regex='+this.value"/>
-            </f:entry>
-          </f:optionalBlock>
-        </f:section>
-      </table>
+    <f:entry title="${%Selected user:}">
+        <j:set var="_userList"  value="${it.possibleUsers}"/>
+        <select name="selectedUser" class="setting-input">
+            <j:forEach var="user" items="${_userList}">
+                <f:option value="${user.getId()}">
+                    ${it.getDisplayName(user)}
+                </f:option>
+            </j:forEach>
+        </select> 
     </f:entry>
-  </f:block>
+                    
+    <f:block> 
+        <f:entry>
+            <table width="100%"> 
+                <f:section title="${%Filters slaves to be reported}">                               
+                                                             
+                    <f:optionalBlock name="useincluderegex4slave" title="${%Use a regular expression to include slaves into the view}"
+                           checked="${it.filters.includeRegex4Slave != null}" >
+                        <f:entry title="${%Regular expression for slave}" field="includeRegex4Slave">
+                            <f:textbox value="${it.filters.includeRegex4Slave}"
+                                    checkUrl="'${rootURL}/plugin/security-inspector/checkRegex?regex='+this.value"/>
+                        </f:entry>
+                    </f:optionalBlock>
+                </f:section>
+            </table>
+        </f:entry>
+    </f:block>
 </j:jelly>

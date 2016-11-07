@@ -23,32 +23,32 @@
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:set var="_jobList" value="${it.possibleJobs}"/>      
-  <f:entry title="${%Selected job: }"> 
-    <select name="selectedJob" class="setting-input">
-      <j:forEach var="job" items="${_jobList}">
-        <f:option value="${job.fullName}">
-          ${job.fullDisplayName}
-        </f:option>
-      </j:forEach>
-    </select>                        
-  </f:entry>
-                    
-  <f:block> 
-    <f:entry>
-      <table width="100%"> 
-        <f:section title="${%Filter users to be reported}"> 
-                    
-          <f:optionalBlock name="useincluderegex4user" 
-                                                     title="${%Filter user IDs by a regular expression}"
-                                                     checked="${it.filters.includeRegex4User != null}" >
-            <f:entry title="${%Regular expression}" field="includeRegex4User">
-              <f:textbox value="${it.filters.includeRegex4User}"
-                                                       checkUrl="'${rootURL}/plugin/security-inspector/checkRegex?regex='+this.value"/>
-            </f:entry>
-          </f:optionalBlock>
-        </f:section>
-      </table>
+    <j:set var="_jobList" value="${it.possibleJobs}"/>      
+    <f:entry title="${%Selected job: }"> 
+        <select name="selectedJob" class="setting-input">
+            <j:forEach var="job" items="${_jobList}">
+                <f:option value="${job.fullName}">
+                    ${job.fullDisplayName}
+                </f:option>
+            </j:forEach>
+        </select>                        
     </f:entry>
-  </f:block>
+                    
+    <f:block> 
+        <f:entry>
+            <table width="100%"> 
+                <f:section title="${%Filter users to be reported}"> 
+                    
+                    <f:optionalBlock name="useincluderegex4user" 
+                            title="${%Filter user IDs by a regular expression}"
+                            checked="${it.filters.includeRegex4User != null}" >
+                        <f:entry title="${%Regular expression}" field="includeRegex4User">
+                            <f:textbox value="${it.filters.includeRegex4User}"
+                                    checkUrl="'${rootURL}/plugin/security-inspector/checkRegex?regex='+this.value"/>
+                        </f:entry>
+                    </f:optionalBlock>
+                </f:section>
+            </table>
+        </f:entry>
+    </f:block>
 </j:jelly>
