@@ -130,7 +130,7 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
     @Restricted(NoExternalUse.class)
     public SecurityInspectorReport getReportSlave() {
         Set<Computer> computers = getRequestedSlaves();
-        Set<Computer> slaves = new HashSet<Computer>();
+        Set<Computer> slaves = new HashSet<>();
         for (Computer c : computers) {
             Node slave = c.getNode();
             if (slave != null) {
@@ -176,7 +176,7 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
         }
 
         public final void generateReport(@Nonnull Set<Computer> rows) {
-            Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+            Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             groups.remove(PermissionGroup.get(Hudson.class));
             //groups.remove(PermissionGroup.get(Computer.class));

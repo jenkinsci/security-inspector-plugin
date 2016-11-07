@@ -181,7 +181,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         }
 
         public final void generateReport(@Nonnull Set<User> rows) {
-            Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+            Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             groups.remove(PermissionGroup.get(Hudson.class));
             groups.remove(PermissionGroup.get(Computer.class));

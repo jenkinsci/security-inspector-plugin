@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections.map.MultiKeyMap;

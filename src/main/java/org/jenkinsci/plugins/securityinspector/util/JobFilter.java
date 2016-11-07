@@ -30,14 +30,11 @@ import hudson.model.AllView;
 import hudson.model.Descriptor;
 import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
-import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.views.ViewJobFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
@@ -49,7 +46,6 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -86,7 +82,7 @@ public class JobFilter {
    */
   public JobFilter() {
     this.statusFilter = null;
-    this.jobFilters = new LinkedList<ViewJobFilter>();
+    this.jobFilters = new LinkedList<>();
     this.includeRegex = null;
   }
 
@@ -113,7 +109,7 @@ public class JobFilter {
       includePattern = null;
     }
 
-    List<ViewJobFilter> items = new ArrayList<ViewJobFilter>();
+    List<ViewJobFilter> items = new ArrayList<>();
     Object formData = req.getSubmittedForm().get("jobFilters");
     Collection<? extends Descriptor<ViewJobFilter>> descriptors = ViewJobFilter.all();
 

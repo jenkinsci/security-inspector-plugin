@@ -24,7 +24,6 @@
 
 package org.jenkinsci.plugins.securityinspector.model;
 
-import org.jenkinsci.plugins.securityinspector.model.SecurityInspectorReport;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.Collection;
@@ -38,7 +37,7 @@ public abstract class PermissionReport<TRow, TEntryReport>
 
   // TODO: WTF? Implicit overrides in implementations
   public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<PermissionGroup> groups) {
-    Set<Permission> permissions = new HashSet<Permission>();
+    Set<Permission> permissions = new HashSet<>();
     for (PermissionGroup group : groups) {
       permissions.addAll(getItemsOfGroup(group));
     }
@@ -52,7 +51,7 @@ public abstract class PermissionReport<TRow, TEntryReport>
 
   @Override
   public final Collection<Permission> getItemsOfGroup(PermissionGroup group) {
-    LinkedList<Permission> res = new LinkedList<Permission>();
+    LinkedList<Permission> res = new LinkedList<>();
     for (Permission p : group.getPermissions()) {
       if (p.getEnabled()) {
         res.add(p);

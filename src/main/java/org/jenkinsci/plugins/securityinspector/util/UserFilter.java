@@ -27,8 +27,6 @@ package org.jenkinsci.plugins.securityinspector.util;
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.User;
-import hudson.util.FormValidation;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -37,7 +35,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -93,7 +90,7 @@ public class UserFilter {
   @Nonnull
   @Restricted(NoExternalUse.class)
   public List<User> doFilter() {
-    SortedSet<String> names = new TreeSet<String>();
+    SortedSet<String> names = new TreeSet<>();
 
     for (User user : User.getAll()) {
       String userId = user.getId();
@@ -104,7 +101,7 @@ public class UserFilter {
       }
     }
 
-    List<User> items = new ArrayList<User>(names.size());
+    List<User> items = new ArrayList<>(names.size());
     for (String n : names) {
       User item = User.get(n, false, null);
       if (item != null) {
