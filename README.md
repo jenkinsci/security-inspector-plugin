@@ -16,7 +16,7 @@ Once you get it...
 1. Specify additional parameters (filters, etc.) in the opened page.
 ![Filter for one user and any jobs](docs/images/FilterForOneUserAndJobs.png)
 1. Click `Submit`.
-![Report for one user and any jobs](docs/images/ReportForUserAndJobs.png)
+![Report for user1 and any jobs](docs/images/ReportForUser1ForItems.png)
 
 ### Available reports
 
