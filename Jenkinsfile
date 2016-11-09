@@ -1,6 +1,4 @@
 node {
-   def mvnHome
-   // Hello!
    stage('Preparation') { // for display purposes
       // Get some code from a GitHub repository
       git 'https://github.com/ksenia-nenasheva/security-inspector-plugin.git'
