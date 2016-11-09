@@ -27,65 +27,8 @@
     <j:set var="_user" value="${it.requestedUser}"/>
     <j:set var="_report" value="${it.reportJob}"/>                        
   
-  
     <h3>${%Permissions of} &quot;${_user.id}&quot; ${%for items}</h3>  
-    <f:block>                 
-        <!-- Job Report -->
-        <table id="projectPermissions" name="data">
-                  
-            <j:if test="${_report.groups.size() == null}">
-                <p>${%Report is empty}</p>
-            </j:if>
-
-            <j:if test="${_report.groups.size() != null}">
-                <!-- The first row will show grouping -->
-                <tr class="group-row">
-                    <td rowspan="2" class="start" />
-                    <td rowspan="2" class="pane-header blank">
-                        ${_report.rowColumnHeader}
-                    </td>
-                                                
-                    <j:forEach var="group" items="${_report.groups}">                          
-                        <td class="pane-header" colspan="${_report.getItemsOfGroup(group).size()}">
-                            ${_report.getGroupTitle(group)}
-                        </td>
-                    </j:forEach>
-                        
-                    <td rowspan="2" class="stop" />
-                </tr> 
-                        
-                <!-- Second Row -->     
-                <tr class="caption-row">
-                    <j:forEach var="group" items="${_report.groups}">
-                        <j:forEach var="groupItem" items="${_report.getItemsOfGroup(group)}">
-                            <td class="pane">
-                                ${_report.getColumnTitle(groupItem)}
-                            </td>
-                        </j:forEach>
-                    </j:forEach>
-                </tr>
-                            
-                <!-- Body -->
-                <j:forEach var="row" items = "${_report.rows}">                       
-                    <tr>
-                        <td class="start" />
-                        <td style="white-space: nowrap">${_report.getRowTitle(row)}</td>
-                        <j:forEach var="group" items="${_report.groups}">
-                            <j:forEach var="groupItem" items="${_report.getItemsOfGroup(group)}">
-                                <td class="pane">
-                                    <j:set var="_entryReport" value="${_report.entries.get(row,groupItem)}"/>
-                                    <j:if test="${_report.isEntryReportOk(row,groupItem,_entryReport) == true}">
-                                        &#10004;
-                                    </j:if>
-                                </td>
-                            </j:forEach>
-                        </j:forEach>
-                        <td class="stop" />
-                    </tr>                       
-                </j:forEach>
-                        
-            </j:if>
-     
-        </table>
-    </f:block>
+    
+    <st:include page="table.jelly" optional="false"/>
+    
 </j:jelly>
