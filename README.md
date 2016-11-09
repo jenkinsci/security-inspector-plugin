@@ -25,16 +25,19 @@ Now this plugin can created 3 reports:
 **For selected user:**
 * Single user, multiple jobs.
  * Display job permissions for the specified user.
+ * Items for the report can be selected using regular expressions or additional filters (e.g. JobFilter extension point).
 * Single user, multiple nodes.
  * Display node permissions for the specified user.
+ * Nodes for the report can be selected using regular expressions.
 
 **For selected job:**
 * Multiple users, single job.
- * Display users permissions for the specified item
+ * Display users permissions for the specified item.
+ * Users for the report can be selected using regular expressions.
 
 ### License
 
-[MIT License](TODO)
+[MIT License](https://opensource.org/licenses/mit-license.php)
 
 ### Reporting issues
 
