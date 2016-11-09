@@ -21,10 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jenkinsci.plugins.securityinspector.model;
 
-import org.jenkinsci.plugins.securityinspector.model.SecurityInspectorReport;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import java.util.Collection;
@@ -36,38 +34,38 @@ import javax.annotation.Nonnull;
 public abstract class PermissionReport<TRow, TEntryReport>
         extends SecurityInspectorReport<TRow, PermissionGroup, Permission, TEntryReport> {
 
-  // TODO: WTF? Implicit overrides in implementations
-  public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<PermissionGroup> groups) {
-    Set<Permission> permissions = new HashSet<Permission>();
-    for (PermissionGroup group : groups) {
-      permissions.addAll(getItemsOfGroup(group));
+    // TODO: WTF? Implicit overrides in implementations
+    public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<PermissionGroup> groups) {
+        Set<Permission> permissions = new HashSet<>();
+        for (PermissionGroup group : groups) {
+            permissions.addAll(getItemsOfGroup(group));
+        }
+        generateReport(rows, permissions, groups);
     }
-    generateReport(rows, permissions, groups);
-  }
 
-  @Override
-  public final PermissionGroup getGroupOfItem(Permission item) {
-    return item.group;
-  }
-
-  @Override
-  public final Collection<Permission> getItemsOfGroup(PermissionGroup group) {
-    LinkedList<Permission> res = new LinkedList<Permission>();
-    for (Permission p : group.getPermissions()) {
-      if (p.getEnabled()) {
-        res.add(p);
-      }
+    @Override
+    public final PermissionGroup getGroupOfItem(Permission item) {
+        return item.group;
     }
-    return res;
-  }
 
-  @Override
-  public final String getGroupTitle(PermissionGroup group) {
-    return group.title.toString();
-  }
+    @Override
+    public final Collection<Permission> getItemsOfGroup(PermissionGroup group) {
+        LinkedList<Permission> res = new LinkedList<>();
+        for (Permission p : group.getPermissions()) {
+            if (p.getEnabled()) {
+                res.add(p);
+            }
+        }
+        return res;
+    }
 
-  @Override
-  public final String getColumnTitle(Permission item) {
-    return item.name;
-  }
+    @Override
+    public final String getGroupTitle(PermissionGroup group) {
+        return group.title.toString();
+    }
+
+    @Override
+    public final String getColumnTitle(Permission item) {
+        return item.name;
+    }
 }

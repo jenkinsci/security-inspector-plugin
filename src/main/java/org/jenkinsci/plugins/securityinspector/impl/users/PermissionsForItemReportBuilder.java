@@ -138,7 +138,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
     }
 
     /**
-     * Get Jobs/Slaves/Users from the context
+     * Get Items from the context
      *
      * @return res List of the requested jobs
      */
@@ -185,7 +185,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         }
 
         public final void generateReport(@Nonnull Set<TopLevelItem> rows) {
-            Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+            Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             groups.remove(PermissionGroup.get(Hudson.class));
             groups.remove(PermissionGroup.get(Computer.class));

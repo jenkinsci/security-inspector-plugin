@@ -1,8 +1,7 @@
 <!--
 - The MIT License
 -
-- Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
-- Thomas Maurel, Romain Seguy
+- Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
 -
 - Permission is hereby granted, free of charge, to any person obtaining a copy
 - of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +25,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <l:layout permission="${app.ADMINISTER}" xmlns:local="local" norefresh="true">
-         <st:include it="${app}" page="sidepanel.jelly"/>
+        <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <link rel="stylesheet" href="${rootURL}${app.VIEW_RESOURCE_PATH}/hudson/security/table.css" type="text/css" />
             <link rel="stylesheet" href="${rootURL}/plugin/security-inspector/css/security-inspector.css" type="text/css" />    
@@ -38,8 +37,8 @@
                 <f:block>
                     <!-- TODO -->
                 </f:block>
-                <f:block>  
-                    <f:submit name="GoToUF" value="${%Back}" />
+                <f:block>                 
+                    <f:submit name="goHomeButton" value="${%Back}" />
                 </f:block>
             </f:form>
         </l:main-panel>

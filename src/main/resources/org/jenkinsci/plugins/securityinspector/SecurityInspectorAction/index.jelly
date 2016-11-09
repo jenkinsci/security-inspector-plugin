@@ -1,8 +1,7 @@
 <!--
 - The MIT License
 -
-- Copyright (c) 2010-2011, Manufacture Française des Pneumatiques Michelin,
-- Thomas Maurel, Romain Seguy
+- Copyright 2014 Ksenia Nenasheva <ks.nenasheva@gmail.com>
 -
 - Permission is hereby granted, free of charge, to any person obtaining a copy
 - of this software and associated documentation files (the "Software"), to deal
@@ -46,18 +45,18 @@
             <!-- table to show a map -->
             <d:tag name="category">
               
-              <j:set var="reportBuiders" value="${it.getReportBuilders(type)}"/>
-              <j:if test="${!reportBuiders.isEmpty()}">
-                <table style="padding-left: 2em;" id="management-links">
-                  <h2>${title}</h2>
-                  <j:forEach var="reportBuilder" items="${reportBuiders}">
-                    <local:reportBuilder icon="${reportBuilder.icon}" href="${reportBuilder.index}" 
+                <j:set var="reportBuiders" value="${it.getReportBuilders(type)}"/>
+                <j:if test="${!reportBuiders.isEmpty()}">
+                    <table style="padding-left: 2em;" id="management-links">
+                        <h2>${title}</h2>
+                        <j:forEach var="reportBuilder" items="${reportBuiders}">
+                            <local:reportBuilder icon="${reportBuilder.icon}" href="${reportBuilder.index}" 
                                    title="${reportBuilder.displayName}">
-                        ${reportBuilder.description}
-                    </local:reportBuilder>
-                  </j:forEach>
-                </table>
-              </j:if>
+                                ${reportBuilder.description}
+                            </local:reportBuilder>
+                        </j:forEach>
+                    </table>
+                </j:if>
             </d:tag>
         </d:taglib>
 

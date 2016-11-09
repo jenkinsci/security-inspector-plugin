@@ -35,17 +35,17 @@ import org.kohsuke.stapler.QueryParameter;
 
 public class SecurityInspectorPlugin extends Plugin {
 
-  @Restricted(NoExternalUse.class)
-  public FormValidation doCheckRegex(@CheckForNull @QueryParameter String regex) {
-    if (regex == null) {
-        return FormValidation.error("The specified regex is null");
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckRegex(@CheckForNull @QueryParameter String regex) {
+        if (regex == null) {
+            return FormValidation.error("The specified regex is null");
+        }
+
+        try {
+            Pattern.compile(regex);
+        } catch (PatternSyntaxException exception) {
+            return FormValidation.error(exception.getDescription());
+        }
+        return FormValidation.ok("Regular expression is valid");
     }
-      
-    try {
-      Pattern.compile(regex);
-    } catch (PatternSyntaxException exception) {
-      return FormValidation.error(exception.getDescription());
-    }
-    return FormValidation.ok("Regular expression is valid");
-  }
 }

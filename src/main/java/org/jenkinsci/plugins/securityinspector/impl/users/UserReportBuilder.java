@@ -77,7 +77,7 @@ public abstract class UserReportBuilder extends ReportBuilder {
     }
     
     /**
-     * Get selected user/job from context
+     * Get selected user from context
      *
      * @return user if exists. Otherwise an error will be returned
      */

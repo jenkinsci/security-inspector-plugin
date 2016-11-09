@@ -30,16 +30,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.securityinspector.SecurityInspectorAction;
-import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
 import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
-import org.jenkinsci.plugins.securityinspector.util.JobFilter;
-import org.jenkinsci.plugins.securityinspector.util.UserFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -86,24 +80,23 @@ public abstract class ReportBuilder implements ExtensionPoint {
         return res;
     }
 
-    public abstract void processParameters(@Nonnull StaplerRequest req) 
+    public abstract void processParameters(@Nonnull StaplerRequest req)
             throws Descriptor.FormException, ServletException;
-    
+
     @Nonnull
     @Restricted(NoExternalUse.class)
     public HttpResponse doFilterSubmit(@Nonnull StaplerRequest req)
             throws ServletException, Descriptor.FormException {
-        
+
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
-        
         SubmittedOperation action = SubmittedOperation.fromRequest(req);
         switch (action) {
             case Submit:
                 processParameters(req);
                 break;
-                
+
             case Back:
                 return HttpResponses.redirectTo(jenkins.getRootUrl() + "security-inspector");
 
@@ -114,7 +107,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
         // Redirect to the search report page
         return HttpResponses.redirectTo("report");
     }
-    
+
     @Restricted(NoExternalUse.class)
     public void doGoHome(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
             throws IOException, ServletException, Descriptor.FormException {
@@ -135,7 +128,8 @@ public abstract class ReportBuilder implements ExtensionPoint {
          *
          * @param req Request
          * @return Located operation
-         * @throws Descriptor.FormException Cannot find any command field from the enum
+         * @throws Descriptor.FormException Cannot find any command field from
+         * the enum
          */
         @Nonnull
         static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) throws Descriptor.FormException {
@@ -150,6 +144,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
     }
 
     public static enum Type {
+
         ITEM,
         USER,
         COMPUTER

@@ -49,7 +49,6 @@ import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
 import org.jenkinsci.plugins.securityinspector.model.SecurityInspectorReport;
-import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.jenkinsci.plugins.securityinspector.util.UserFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -87,15 +86,15 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
     public void processParameters(StaplerRequest req) throws Descriptor.FormException, ServletException {
         final String regex = req.getParameter("_.includeRegex4User");
         try {
-          Pattern.compile(regex);
+            Pattern.compile(regex);
         } catch (PatternSyntaxException exception) {
-          throw new Descriptor.FormException(exception, "includeRegex4User");
+            throw new Descriptor.FormException(exception, "includeRegex4User");
         }
-        final String selectedItem = req.getParameter("selectedJobs");
+        final String selectedItem = req.getParameter("selectedJob");
         UserFilter filter4user = new UserFilter(req);
         UserContextCache.updateSearchCache(filter4user, selectedItem);
     }
-    
+
     //TODO: fix rawtype before the release
     @Nonnull
     @Restricted(NoExternalUse.class)
@@ -129,22 +128,6 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
             }
         }
         return res;
-    }
-
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public Item getRequestedJob() throws HttpResponses.HttpResponseException {
-        UserContext context = UserContextCache.getInstance().get(getSessionId());
-        if (context == null) {
-            // TODO: 
-            throw HttpResponses.error(404, "Context has not been found");
-        }
-        String jobName = context.getItem();
-        Item job = JenkinsHelper.getInstanceOrFail().getItemByFullName(jobName, Item.class);
-        if (job == null) {
-            throw HttpResponses.error(404, "Job " + jobName + " does not exist");
-        }
-        return job;
     }
 
     public static class ReportImpl extends PermissionReport<User, Boolean> {
@@ -181,7 +164,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         }
 
         public final void generateReport(@Nonnull Set<User> rows) {
-            Set<PermissionGroup> groups = new HashSet<PermissionGroup>(PermissionGroup.getAll());
+            Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             groups.remove(PermissionGroup.get(Hudson.class));
             groups.remove(PermissionGroup.get(Computer.class));

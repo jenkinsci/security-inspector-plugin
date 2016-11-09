@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jenkinsci.plugins.securityinspector;
 
 import java.util.HashMap;
@@ -38,66 +37,67 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class UserContextCache {
 
-  //TODO: fix concurrency issues
-  final Map<String, UserContext> contextMap = new HashMap<>();
+    //TODO: fix concurrency issues
+    final Map<String, UserContext> contextMap = new HashMap<>();
 
-  private static final UserContextCache INSTANCE = new UserContextCache();
-  
-  @Nonnull
-  public static UserContextCache getInstance() {
-      return INSTANCE;
-  }
-  
-  private UserContextCache() {
-      // OTHERS CANNOT INSTANTINATE
-  }
-  
-  public synchronized boolean containsKey(@Nonnull String sessionId) {
-    return contextMap.containsKey(sessionId);
-  }
+    private static final UserContextCache INSTANCE = new UserContextCache();
 
-  @CheckForNull
-  public synchronized UserContext get(@Nonnull String sessionId) {
-    return contextMap.get(sessionId);
-  }
-
-  public synchronized void flush(@Nonnull String sessionId) {
-    if (contextMap.containsKey(sessionId)) {
-      contextMap.remove(sessionId);
+    @Nonnull
+    public static UserContextCache getInstance() {
+        return INSTANCE;
     }
-  }
 
-  // TODO: Bug, replacement of the session ID
-  public synchronized void put(@Nonnull String sessionId, @Nonnull UserContext context) {
-    contextMap.put(getSessionId(), context);
-  }
-  
-  /**
-   * Cleans internal cache of JSON Objects for the session.
-   * @return Current Session Id
-   */
-  @Nonnull
-  public static String cleanCache() {
-    final String sessionId = getSessionId();
-    INSTANCE.flush(sessionId);
-    return sessionId;
-  }
-  
-  public static void updateSearchCache(@Nonnull JobFilter jobFilter, @Nonnull String item) {
-    cleanCache();
-    // Put Context to the map
-    INSTANCE.put(getSessionId(), new UserContext(jobFilter, item));
-  }
+    private UserContextCache() {
+        // OTHERS CANNOT INSTANTINATE
+    }
 
-  public static void updateSearchCache(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
-    cleanCache();
-    // Put Context to the map
-    INSTANCE.put(getSessionId(), new UserContext(slaveFilter, item));
-  }
+    public synchronized boolean containsKey(@Nonnull String sessionId) {
+        return contextMap.containsKey(sessionId);
+    }
 
-  public static void updateSearchCache(@Nonnull UserFilter userFilter, @Nonnull String item) {
-    cleanCache();
-    // Put Context to the map
-    INSTANCE.put(getSessionId(), new UserContext(userFilter, item));
-  }
+    @CheckForNull
+    public synchronized UserContext get(@Nonnull String sessionId) {
+        return contextMap.get(sessionId);
+    }
+
+    public synchronized void flush(@Nonnull String sessionId) {
+        if (contextMap.containsKey(sessionId)) {
+            contextMap.remove(sessionId);
+        }
+    }
+
+    // TODO: Bug, replacement of the session ID
+    public synchronized void put(@Nonnull String sessionId, @Nonnull UserContext context) {
+        contextMap.put(getSessionId(), context);
+    }
+
+    /**
+     * Cleans internal cache of JSON Objects for the session.
+     *
+     * @return Current Session Id
+     */
+    @Nonnull
+    public static String cleanCache() {
+        final String sessionId = getSessionId();
+        INSTANCE.flush(sessionId);
+        return sessionId;
+    }
+
+    public static void updateSearchCache(@Nonnull JobFilter jobFilter, @Nonnull String item) {
+        cleanCache();
+        // Put Context to the map
+        INSTANCE.put(getSessionId(), new UserContext(jobFilter, item));
+    }
+
+    public static void updateSearchCache(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
+        cleanCache();
+        // Put Context to the map
+        INSTANCE.put(getSessionId(), new UserContext(slaveFilter, item));
+    }
+
+    public static void updateSearchCache(@Nonnull UserFilter userFilter, @Nonnull String item) {
+        cleanCache();
+        // Put Context to the map
+        INSTANCE.put(getSessionId(), new UserContext(userFilter, item));
+    }
 }
