@@ -82,7 +82,9 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         User.get("admin");
         User.get("user1");
         User.get("user2");
-        User.get("user3");
+        User user3 = User.get("user3");
+        j.jenkins.save();
+        user3.save();
         
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
