@@ -62,7 +62,7 @@ public class JobFilter {
      * Include regex string.
      */
     @CheckForNull
-    private String includeRegex;
+    private final String includeRegex;
 
     /**
      * Compiled include pattern from the includeRegex string.
@@ -75,7 +75,7 @@ public class JobFilter {
      * true for enabled-only, false for disabled-only.
      */
     @CheckForNull
-    private Boolean statusFilter;
+    private final Boolean statusFilter;
 
     /**
      * Constructs empty filter.
