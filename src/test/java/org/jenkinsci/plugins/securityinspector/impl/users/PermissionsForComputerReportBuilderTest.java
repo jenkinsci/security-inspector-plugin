@@ -24,12 +24,10 @@
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
 import hudson.model.Computer;
-//import hudson.model.Item;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
-//import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
-//import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
+import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
 import org.junit.Test;
 
@@ -44,6 +42,24 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
     }
     
     @Test
+    public void shouldReportAdminProperly() throws Exception {
+        initializeDefaultMatrixAuthSecurity();
+        final PermissionsForComputerReportBuilder builder = getBuilder();
+
+        final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("admin"));
+        Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        report.generateReport(computers);
+        
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
+                Computer.DELETE, Computer.DISCONNECT);  
+        
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
+                Computer.DELETE, Computer.DISCONNECT);
+    }
+    
+    @Test
     public void shouldReportUser1Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForComputerReportBuilder builder = getBuilder();
@@ -52,8 +68,13 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
         report.generateReport(computers);
         
-        //PermissionReportAssert.assertHasPermissions(report, JenkinsHelper.getInstanceOrFail().getComputer("master"), 
-        //        Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);    
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
+                Computer.DELETE, Computer.DISCONNECT);  
+        
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
+                Computer.DELETE, Computer.DISCONNECT);
     }
     
 }
