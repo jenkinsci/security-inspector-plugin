@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.securityinspector.util;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import hudson.model.Computer;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.JobProperty;
@@ -31,6 +32,7 @@ import hudson.model.User;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
+import hudson.slaves.DumbSlave;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,6 +92,9 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
         final Folder f = j.createProject(Folder.class, "folder");
         f.createProject(FreeStyleProject.class, "projectInFolder");
+        
+        DumbSlave slave1 = j.createSlave("slave1", null, null);
+        slave1.save();
                 
         // Initialize global security
         final ProjectMatrixAuthorizationStrategy strategy = new ProjectMatrixAuthorizationStrategy();
