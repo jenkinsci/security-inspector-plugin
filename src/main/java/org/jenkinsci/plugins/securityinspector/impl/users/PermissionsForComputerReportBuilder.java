@@ -146,13 +146,13 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
         try {
             auth = user.impersonate();
         } catch (UsernameNotFoundException ex) {
-            return new ReportImpl();
+            return new ReportImpl(user);
         }
 
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
-            report = ReportImpl.createReport(slaves);
+            report = ReportImpl.createReport(slaves, user);
         } finally {
             if (initialContext != null) {
                 SecurityContextHolder.setContext(initialContext);
@@ -169,17 +169,42 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
      */
     public static class ReportImpl extends PermissionReport<Computer, Boolean> {
 
+        @Nonnull
+        final User user4report;
+
+        /**package*/ ReportImpl(@Nonnull User user) {
+            this.user4report = user;
+        }
+        
         @Override
         protected Boolean getEntryReport(Computer column, Permission item) {
+            
+            final Authentication auth;
+            try {
+                auth = user4report.impersonate();
+            } catch (UsernameNotFoundException ex) {
+                return Boolean.FALSE;
+            }
+            
+            SecurityContext initialContext = null;
             AuthorizationStrategy strategy = JenkinsHelper.getInstanceOrFail().getAuthorizationStrategy();
-            return strategy.getACL(column).hasPermission(item);
+            try {
+                initialContext = hudson.security.ACL.impersonate(auth);
+                return strategy.getACL(column).hasPermission(item);
+            } finally {
+                if (initialContext != null) {
+                    SecurityContextHolder.setContext(initialContext);
+                }
+            }
+            
+            //AuthorizationStrategy strategy = JenkinsHelper.getInstanceOrFail().getAuthorizationStrategy();
+            //return strategy.getACL(column).hasPermission(item);
         }
 
         public final void generateReport(@Nonnull Set<Computer> rows) {
             Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
             groups.remove(PermissionGroup.get(Hudson.class));
-            //groups.remove(PermissionGroup.get(Computer.class));
             groups.remove(PermissionGroup.get(View.class));
             groups.remove(PermissionGroup.get(Job.class));
             groups.remove(PermissionGroup.get(Item.class));
@@ -189,8 +214,8 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
             super.generateReport(rows, groups);
         }
 
-        public static ReportImpl createReport(@Nonnull Set<Computer> rows) {
-            ReportImpl report = new ReportImpl();
+        public static ReportImpl createReport(@Nonnull Set<Computer> rows, @Nonnull User user) {
+            ReportImpl report = new ReportImpl(user);
             report.generateReport(rows);
             return report;
         }
