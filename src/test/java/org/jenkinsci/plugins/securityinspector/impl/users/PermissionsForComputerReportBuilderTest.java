@@ -68,13 +68,50 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
         report.generateReport(computers);
         
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.BUILD, Computer.CONFIGURE);
         PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
-                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
-                Computer.DELETE, Computer.DISCONNECT);  
+                Computer.CONNECT, Computer.CREATE, Computer.DELETE, Computer.DISCONNECT);  
         
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.BUILD, Computer.CONFIGURE);
         PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
-                Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
-                Computer.DELETE, Computer.DISCONNECT);
+                Computer.CONNECT, Computer.CREATE, Computer.DELETE, Computer.DISCONNECT);
     }
     
+    @Test
+    public void shouldReportUser2Properly() throws Exception {
+        initializeDefaultMatrixAuthSecurity();
+        final PermissionsForComputerReportBuilder builder = getBuilder();
+
+        final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user2"));
+        Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        report.generateReport(computers);
+        
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.CONNECT, Computer.CREATE);
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);  
+        
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.CONNECT, Computer.CREATE);
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);
+    }
+    
+    @Test
+    public void shouldReportUser3Properly() throws Exception {
+        initializeDefaultMatrixAuthSecurity();
+        final PermissionsForComputerReportBuilder builder = getBuilder();
+
+        final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user3"));
+        Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        report.generateReport(computers);
+
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+                Computer.CONNECT, Computer.CREATE, Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);  
+
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+                Computer.CONNECT, Computer.CREATE, Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);
+    }
 }

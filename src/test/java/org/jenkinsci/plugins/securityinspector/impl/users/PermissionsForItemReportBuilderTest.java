@@ -157,8 +157,8 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
                 Item.CONFIGURE, Item.CREATE, Item.DELETE, Item.BUILD, Item.CANCEL, Item.WORKSPACE);
         
         PermissionReportAssert.assertHasPermissions(report, j.jenkins.getItemByFullName("folder/projectInFolder", TopLevelItem.class), 
-                Item.READ, Item.DISCOVER);
+                Item.READ, Item.BUILD, Item.CANCEL, Item.CONFIGURE, Item.CREATE, Item.DELETE, Item.DISCOVER);
         PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getItemByFullName("folder/projectInFolder", TopLevelItem.class), 
-                Item.CONFIGURE, Item.CREATE, Item.DELETE, Item.BUILD, Item.CANCEL, Item.WORKSPACE);
+                Item.WORKSPACE);
     }
 }

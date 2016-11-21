@@ -175,9 +175,8 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
                 Item.DELETE, Item.WORKSPACE);
         
         PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
-                Item.READ, Item.DISCOVER);
+                Item.READ, Item.DISCOVER, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, Item.DELETE);
         PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
+                Item.WORKSPACE);
     }
 }

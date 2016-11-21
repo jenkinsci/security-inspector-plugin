@@ -91,11 +91,13 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
         final Folder f = j.createProject(Folder.class, "folder");
-        f.createProject(FreeStyleProject.class, "projectInFolder");
+        FreeStyleProject projectInFolder = f.createProject(FreeStyleProject.class, "projectInFolder");
         
-        DumbSlave slave1 = j.createSlave("slave1", null, null);
-        slave1.save();
-                
+        DumbSlave slave1 = j.createSlave();
+        slave1.setNodeName("slave1");
+        DumbSlave slave2 = j.createSlave();
+        slave2.setNodeName("slave2");
+        
         // Initialize global security
         final ProjectMatrixAuthorizationStrategy strategy = new ProjectMatrixAuthorizationStrategy();
         strategy.add(Jenkins.ADMINISTER, "admin");
@@ -105,6 +107,10 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         strategy.add(Item.READ, "user1");
         strategy.add(Item.READ, "user2");
         strategy.add(Item.READ, "user3");
+        strategy.add(Computer.BUILD, "user1");
+        strategy.add(Computer.CONFIGURE, "user1");
+        strategy.add(Computer.CONNECT, "user2");
+        strategy.add(Computer.CREATE, "user2");
         j.jenkins.setAuthorizationStrategy(strategy);
         
         // Setup local security for project 1
@@ -125,6 +131,19 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
             permissions.put(Item.DELETE, user2);
             final JobProperty prop = new AuthorizationMatrixProperty(permissions);
             project2.addProperty(prop);
+        }
+        
+        // Setup local security for projectInFolder
+        {
+            final Set<String> user = Collections.singleton("user3");
+            final Map<Permission, Set<String>> permissions = new HashMap<>();
+            permissions.put(Item.BUILD, user);
+            permissions.put(Item.CANCEL, user);
+            permissions.put(Item.CONFIGURE, user);
+            permissions.put(Item.CREATE, user);
+            permissions.put(Item.DELETE, user);
+            final JobProperty prop = new AuthorizationMatrixProperty(permissions);
+            projectInFolder.addProperty(prop);
         }
     }
 }
