@@ -23,6 +23,10 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.items;
 
+import hudson.model.Item;
+import hudson.model.User;
+import java.util.HashSet;
+import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
 import org.junit.Test;
 /**
@@ -41,5 +45,32 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
         
         final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
+        HashSet<User> users = new HashSet<>();
+        for (User user : User.getAll()) {
+            users.add(user);
+        }
+        report.generateReport(users);
+        
+        // Check entries
+        PermissionReportAssert.assertHasPermissions(report, User.get("admin"), 
+                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
+                Item.DELETE, Item.DISCOVER, Item.WORKSPACE);
+        
+        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), 
+                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(report, User.get("user1"), 
+                Item.CREATE, Item.DELETE, Item.WORKSPACE);
+        
+        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), 
+                Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(report, User.get("user2"), 
+                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
+                Item.DELETE, Item.WORKSPACE);  
+        
+        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
+                Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
+                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
+                Item.DELETE, Item.WORKSPACE);
     }
 }

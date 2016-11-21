@@ -23,11 +23,17 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import hudson.model.Item;
+import hudson.model.TopLevelItem;
+import java.util.HashSet;
+import java.util.Set;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
+import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
 import org.junit.Test;
 
 /**
- *
+ * Tests of {@link PermissionsForItemReportBuilder}.
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
 public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<PermissionsForItemReportBuilder> {
@@ -41,9 +47,19 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
         
+        final PermissionsForItemReportBuilder.ReportImpl report = new PermissionsForItemReportBuilder.ReportImpl(j.jenkins.getUser("user1"));
         
+        final Set<TopLevelItem> allItems = new HashSet<>(JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class));     
+        report.generateReport(allItems);
+                
+        PermissionReportAssert.assertHasPermissions(report, JenkinsHelper.getInstanceOrFail().getItem("project1"), 
+                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(report, JenkinsHelper.getInstanceOrFail().getItem("project1"), 
+                Item.CREATE, Item.DELETE, Item.WORKSPACE);
         
-        final PermissionsForItemReportBuilder.JobReport report;
-        report = new PermissionsForItemReportBuilder.JobReport();
+        PermissionReportAssert.assertHasPermissions(report, JenkinsHelper.getInstanceOrFail().getItem("project2"), 
+                Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(report, JenkinsHelper.getInstanceOrFail().getItem("project2"), 
+                Item.CONFIGURE, Item.CREATE, Item.DELETE, Item.BUILD, Item.CANCEL, Item.WORKSPACE);
     }  
 }

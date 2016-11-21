@@ -23,11 +23,18 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import hudson.model.Computer;
+//import hudson.model.Item;
+import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Set;
+//import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
+//import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
 import org.junit.Test;
 
 /**
- * Tests of {@link ItemForMultipleUsersReportBuilder}.
+ * Tests of {@link PermissionsForComputerReportBuilder}.
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
 public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBase<PermissionsForComputerReportBuilder> {
@@ -40,9 +47,13 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
     public void shouldReportUser1Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForComputerReportBuilder builder = getBuilder();
+
+        final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user1"));
+        Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        report.generateReport(computers);
         
-        final PermissionsForComputerReportBuilder.ReportImpl report;
-        report = new PermissionsForComputerReportBuilder.ReportImpl();
+        //PermissionReportAssert.assertHasPermissions(report, JenkinsHelper.getInstanceOrFail().getComputer("master"), 
+        //        Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);    
     }
     
 }
