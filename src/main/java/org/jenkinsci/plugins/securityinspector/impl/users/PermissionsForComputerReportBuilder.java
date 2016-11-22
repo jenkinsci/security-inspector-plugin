@@ -196,9 +196,6 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
                     SecurityContextHolder.setContext(initialContext);
                 }
             }
-            
-            //AuthorizationStrategy strategy = JenkinsHelper.getInstanceOrFail().getAuthorizationStrategy();
-            //return strategy.getACL(column).hasPermission(item);
         }
 
         public final void generateReport(@Nonnull Set<Computer> rows) {
