@@ -193,6 +193,9 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
             
             SecurityContext initialContext = null;
             Item i = JenkinsHelper.getInstanceOrFail().getItemByFullName(column.getFullName());
+            if (i == null) {
+                return Boolean.FALSE;
+            }
             try {
                 initialContext = hudson.security.ACL.impersonate(auth);
                 return i.hasPermission(item);
