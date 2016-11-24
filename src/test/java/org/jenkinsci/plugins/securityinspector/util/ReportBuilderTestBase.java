@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.securityinspector.util;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import hudson.EnvVars;
 import hudson.model.Computer;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
@@ -81,6 +82,8 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
     
     protected void initializeDefaultMatrixAuthSecurity() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        
+        // Create users
         User.get("admin");
         User.get("user1");
         User.get("user2");
@@ -88,16 +91,15 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         j.jenkins.save();
         user3.save();
         
+        // Create items (jobs & folder)
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
         final Folder f = j.createProject(Folder.class, "folder");
         FreeStyleProject projectInFolder = f.createProject(FreeStyleProject.class, "projectInFolder");
         
-        DumbSlave slave1 = j.createSlave();
-        slave1.setNodeName("slave1");
-        DumbSlave slave2 = j.createSlave();
-        slave2.setNodeName("slave2");
-        
+        // Create node
+        DumbSlave slave1 = j.createSlave("slave1", "", new EnvVars());
+                
         // Initialize global security
         final ProjectMatrixAuthorizationStrategy strategy = new ProjectMatrixAuthorizationStrategy();
         strategy.add(Jenkins.ADMINISTER, "admin");
