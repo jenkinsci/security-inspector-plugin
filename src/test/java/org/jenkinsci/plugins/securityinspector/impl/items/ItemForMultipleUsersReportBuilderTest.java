@@ -28,6 +28,7 @@ import hudson.model.User;
 import java.util.HashSet;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 /**
  * Tests of {@link ItemForMultipleUsersReportBuilder}.
@@ -45,6 +46,8 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
         
         final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
+        assertNotNull(report);
+        assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
         for (User user : User.getAll()) {
             users.add(user);
@@ -80,6 +83,8 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
         
         final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project2"));
+        assertNotNull(report);
+        assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
         for (User user : User.getAll()) {
             users.add(user);
@@ -115,6 +120,8 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
         
         final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("folder"));
+        assertNotNull(report);
+        assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
         for (User user : User.getAll()) {
             users.add(user);
@@ -151,6 +158,8 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
         
         final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItemByFullName("folder/projectInFolder"));
+        assertNotNull(report);
+        assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
         for (User user : User.getAll()) {
             users.add(user);

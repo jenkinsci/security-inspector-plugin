@@ -27,8 +27,11 @@ import hudson.model.Computer;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
+import javax.annotation.CheckForNull;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
+import org.junit.Assert;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 /**
@@ -47,14 +50,16 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         final PermissionsForComputerReportBuilder builder = getBuilder();
 
         final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("admin"));
+        assertNotNull(report);
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        assertNotNull(computers);
         report.generateReport(computers);
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer(""), 
                 Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
                 Computer.DELETE, Computer.DISCONNECT);  
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.BUILD, Computer.CONFIGURE, Computer.CONNECT, Computer.CREATE, 
                 Computer.DELETE, Computer.DISCONNECT);
     }
@@ -65,17 +70,19 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         final PermissionsForComputerReportBuilder builder = getBuilder();
 
         final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user1"));
+        assertNotNull(report);
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        assertNotNull(computers);
         report.generateReport(computers);
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer(""), 
                 Computer.BUILD, Computer.CONFIGURE);
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer(""), 
                 Computer.CONNECT, Computer.CREATE, Computer.DELETE, Computer.DISCONNECT);  
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.BUILD, Computer.CONFIGURE);
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.CONNECT, Computer.CREATE, Computer.DELETE, Computer.DISCONNECT);
     }
     
@@ -85,17 +92,19 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         final PermissionsForComputerReportBuilder builder = getBuilder();
 
         final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user2"));
+        assertNotNull(report);
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        assertNotNull(computers);
         report.generateReport(computers);
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer(""), 
                 Computer.CONNECT, Computer.CREATE);
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer(""), 
                 Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);  
         
-        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.CONNECT, Computer.CREATE);
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);
     }
     
@@ -105,13 +114,15 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
         final PermissionsForComputerReportBuilder builder = getBuilder();
 
         final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("user3"));
+        assertNotNull(report);
         Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        assertNotNull(computers);
         report.generateReport(computers);
 
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[0], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer(""), 
                 Computer.CONNECT, Computer.CREATE, Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);  
 
-        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputers()[1], 
+        PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.CONNECT, Computer.CREATE, Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);
     }
 }

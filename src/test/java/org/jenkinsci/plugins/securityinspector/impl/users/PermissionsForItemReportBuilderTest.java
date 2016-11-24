@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 /**
@@ -47,8 +48,9 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
         final PermissionsForItemReportBuilder builder = getBuilder();
         
         final PermissionsForItemReportBuilder.ReportImpl report = new PermissionsForItemReportBuilder.ReportImpl(j.jenkins.getUser("admin"));
-        
-        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class));     
+        assertNotNull(report);
+        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class));
+        assertNotNull(allItems);
         report.generateReport(allItems);
         
         PermissionReportAssert.assertHasPermissions(report, j.jenkins.getItem("project1"), 
@@ -75,8 +77,9 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
         final PermissionsForItemReportBuilder builder = getBuilder();
         
         final PermissionsForItemReportBuilder.ReportImpl report = new PermissionsForItemReportBuilder.ReportImpl(j.jenkins.getUser("user1"));
-        
-        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class));     
+        assertNotNull(report);
+        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class)); 
+        assertNotNull(allItems);
         report.generateReport(allItems);
                 
         PermissionReportAssert.assertHasPermissions(report, j.jenkins.getItem("project1"), 
@@ -106,8 +109,9 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
         final PermissionsForItemReportBuilder builder = getBuilder();
         
         final PermissionsForItemReportBuilder.ReportImpl report = new PermissionsForItemReportBuilder.ReportImpl(j.jenkins.getUser("user2"));
-        
-        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class));     
+        assertNotNull(report);
+        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class)); 
+        assertNotNull(allItems);     
         report.generateReport(allItems);
         
         PermissionReportAssert.assertHasPermissions(report, j.jenkins.getItem("project1"), 
@@ -137,8 +141,9 @@ public class PermissionsForItemReportBuilderTest  extends ReportBuilderTestBase<
         final PermissionsForItemReportBuilder builder = getBuilder();
         
         final PermissionsForItemReportBuilder.ReportImpl report = new PermissionsForItemReportBuilder.ReportImpl(j.jenkins.getUser("user3"));
-        
-        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class));     
+        assertNotNull(report);
+        final Set<TopLevelItem> allItems = new HashSet<>(j.jenkins.getAllItems(TopLevelItem.class)); 
+        assertNotNull(allItems);     
         report.generateReport(allItems);
         
         PermissionReportAssert.assertHasPermissions(report, j.jenkins.getItem("project1"), 
