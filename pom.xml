@@ -15,7 +15,7 @@
   <artifactId>security-inspector</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>hpi</packaging>
-  <!-- <url>https://wiki.jenkins-ci.org/display/JENKINS/Security+Inspector</url> -->
+  <url>https://wiki.jenkins-ci.org/display/JENKINS/Security+Inspector+Plugin</url>
 
   <licenses>
     <license>
@@ -38,6 +38,14 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
+  
+  <developers>
+    <developer>
+      <id>ksenia-nenasheva</id>
+      <name>Ksenia Nenasheva</name>
+      <email>ks.nenasheva@gmail.com</email>
+    </developer>
+  </developers>
   
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
