@@ -14,7 +14,7 @@
   <name>Security Inspector Plugin</name>
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>security-inspector</artifactId>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <url>https://wiki.jenkins-ci.org/display/JENKINS/Security+Inspector+Plugin</url>
 
@@ -52,7 +52,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>security-inspector-0.1</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <dependencies>
