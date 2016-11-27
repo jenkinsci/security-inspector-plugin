@@ -135,7 +135,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         @Nonnull
         final Item job4report;
 
-        private ReportImpl(@Nonnull Item job) {
+        /**package*/ ReportImpl(@Nonnull Item job) {
             this.job4report = job;
         }
 

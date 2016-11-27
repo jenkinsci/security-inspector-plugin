@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.TreeSet;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.apache.commons.collections.map.MultiKeyMap;
 
@@ -85,6 +86,12 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     @Nonnull
     public Set<TColumnItem> getColumns() {
         return columns;
+    }
+    
+    @CheckForNull
+    public final TEntryReport getEntry(@Nonnull TRow row, @Nonnull TColumnItem column) {
+        final Object object = entries.get(row, column);
+        return (TEntryReport)object;
     }
 
     public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<TColumnItem> columns, @Nonnull Set<TColumnGroup> groups) {

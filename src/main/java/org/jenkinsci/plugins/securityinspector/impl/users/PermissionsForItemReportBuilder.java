@@ -104,21 +104,21 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
     public SecurityInspectorReport getReportJob() {
         Set<TopLevelItem> items = getRequestedJobs();
         User user = getRequestedUser();
-        final JobReport report;
+        final ReportImpl report;
 
         // Impersonate to check the permission
         final Authentication auth;
         try {
             auth = user.impersonate();
         } catch (UsernameNotFoundException ex) {
-            return new JobReport();
+            return new ReportImpl(user);
         }
 
         //TODO: rework the logic to guarantee that report is initialized
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
-            report = JobReport.createReport(items);
+            report = ReportImpl.createReport(items, user);
         } finally {
             if (initialContext != null) {
                 SecurityContextHolder.setContext(initialContext);
@@ -172,16 +172,38 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         return res;
     }
 
-    public static class JobReport extends PermissionReport<TopLevelItem, Boolean> {
+    public static class ReportImpl extends PermissionReport<TopLevelItem, Boolean> {
 
+        @Nonnull
+        final User user4report;
+
+        /**package*/ ReportImpl(@Nonnull User user) {
+            this.user4report = user;
+        }
+        
         @Override
         protected Boolean getEntryReport(TopLevelItem column, Permission item) {
+            
+            final Authentication auth;
+            try {
+                auth = user4report.impersonate();
+            } catch (UsernameNotFoundException ex) {
+                return Boolean.FALSE;
+            }
+            
+            SecurityContext initialContext = null;
             Item i = JenkinsHelper.getInstanceOrFail().getItemByFullName(column.getFullName());
             if (i == null) {
-                // Item is not accessible anymore, so we cannot check it's permission
-                return false;
+                return Boolean.FALSE;
             }
-            return i.hasPermission(item);
+            try {
+                initialContext = hudson.security.ACL.impersonate(auth);
+                return i.hasPermission(item);
+            } finally {
+                if (initialContext != null) {
+                    SecurityContextHolder.setContext(initialContext);
+                }
+            }
         }
 
         public final void generateReport(@Nonnull Set<TopLevelItem> rows) {
@@ -195,8 +217,8 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         }
 
         @Nonnull
-        public static JobReport createReport(@Nonnull Set<TopLevelItem> rows) {
-            JobReport report = new JobReport();
+        public static ReportImpl createReport(@Nonnull Set<TopLevelItem> rows, @Nonnull User user) {
+            ReportImpl report = new ReportImpl(user);
             report.generateReport(rows);
             return report;
         }

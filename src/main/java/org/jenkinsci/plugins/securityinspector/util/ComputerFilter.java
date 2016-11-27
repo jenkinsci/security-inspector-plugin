@@ -100,7 +100,7 @@ public class ComputerFilter {
 
         // TODO: what, sync of the internal method?
         synchronized (this) {
-            names = new TreeSet<String>();
+            names = new TreeSet<>();
         }
 
         for (Computer item : jenkins.getComputers()) {
@@ -113,7 +113,7 @@ public class ComputerFilter {
             }
         }
 
-        List<Computer> items = new ArrayList<Computer>(names.size());
+        List<Computer> items = new ArrayList<>(names.size());
         for (String n : names) {
             Computer item = jenkins.getComputer(n);
             // Add if no status filter or filter matches enabled/disabled status:
