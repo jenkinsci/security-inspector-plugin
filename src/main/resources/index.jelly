@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<div>
+ Allows checking user permissions for particular jobs and nodes.
+ The plugin can create various reports upon the request by Jenkins administrators.
+</div>

@@ -11,6 +11,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <name>Security Inspector Plugin</name>
   <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>security-inspector</artifactId>
   <version>0.1-SNAPSHOT</version>
