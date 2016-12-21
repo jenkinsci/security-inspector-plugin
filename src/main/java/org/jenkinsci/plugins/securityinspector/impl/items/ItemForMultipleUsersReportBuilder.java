@@ -140,29 +140,31 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         }
 
         @Override
-        protected Boolean getEntryReport(User column, Permission item) {
-            // Impersonate to check the permission
+        public void forRow(User user, Runnable runnable) {
             final Authentication auth;
-            Boolean result;
-
             try {
-                auth = column.impersonate();
+                auth = user.impersonate();
             } catch (UsernameNotFoundException ex) {
-                return Boolean.FALSE;
+                fillRowByResult(user, Boolean.FALSE);
+                return;
             }
-
+            
             SecurityContext initialContext = null;
             try {
                 initialContext = hudson.security.ACL.impersonate(auth);
-                result = job4report.hasPermission(item);
+                runnable.run();
             } finally {
                 if (initialContext != null) {
                     SecurityContextHolder.setContext(initialContext);
                 }
             }
-            return result;
         }
-
+      
+        @Override
+        protected Boolean getEntryReport(User column, Permission item) {
+            return job4report.hasPermission(item);
+        }
+        
         public final void generateReport(@Nonnull Set<User> rows) {
             Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));
