@@ -94,15 +94,31 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
         return (TEntryReport)object;
     }
 
-    public final void generateReport(@Nonnull Set<TRow> rows, @Nonnull Set<TColumnItem> columns, @Nonnull Set<TColumnGroup> groups) {
+    public void forRow(@Nonnull TRow row, @Nonnull Runnable runnable) {
+        // Just run the runnable by default
+        runnable.run();
+    }
+    
+    public final void generateReport(final @Nonnull Set<TRow> rows, final @Nonnull Set<TColumnItem> columns, final @Nonnull Set<TColumnGroup> groups) {
         this.groups.addAll(groups);
         this.rows.addAll(rows);
         this.columns.addAll(columns);
 
-        for (TRow row : rows) {
-            for (TColumnItem column : columns) {
-                entries.put(row, column, getEntryReport(row, column));
-            }
+        for (final TRow row : rows) {
+            forRow(row, new Runnable() {
+                @Override
+                public void run() {
+                    for (TColumnItem column : columns) {
+                        entries.put(row, column, getEntryReport(row, column));
+                    }
+                }
+            });
+        }
+    }
+    
+    protected final void fillRowByResult(@Nonnull TRow row, TEntryReport result) {
+        for (TColumnItem column : columns) {
+            entries.put(row, column, result);
         }
     }
 
