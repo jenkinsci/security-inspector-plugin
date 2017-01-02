@@ -30,6 +30,7 @@ import hudson.model.AllView;
 import hudson.model.Descriptor;
 import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.views.ViewJobFilter;
@@ -63,6 +64,12 @@ public class JobFilter {
      */
     @CheckForNull
     private final String includeRegex;
+    
+    /**
+     * Folder name for report
+     */
+    @CheckForNull
+    private final String report4folder;
 
     /**
      * Compiled include pattern from the includeRegex string.
@@ -84,6 +91,7 @@ public class JobFilter {
         this.statusFilter = null;
         this.jobFilters = new LinkedList<>();
         this.includeRegex = null;
+        this.report4folder = null;
     }
 
     /**
@@ -107,6 +115,12 @@ public class JobFilter {
         } else {
             includeRegex = null;
             includePattern = null;
+        }
+        
+        if (req.getParameter("usefolder") != null) {
+            report4folder = req.getParameter("selectedFolder");
+        } else {
+            report4folder = null;
         }
 
         List<ViewJobFilter> items = new ArrayList<>();
@@ -143,8 +157,25 @@ public class JobFilter {
         final SortedSet<String> names = new TreeSet<>();
 
         // TODO: Switch to View.getAllItems() once it behaves according to the spec
-        final List<TopLevelItem> allItems = JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class);
+        final List<TopLevelItem> allItems;
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
+
+        if (report4folder != null) {
+            TopLevelItem folder = JenkinsHelper.getInstanceOrFail().getItem(report4folder);
+            if (folder instanceof ItemGroup) {
+                Collection<Item> items = ((ItemGroup)folder).getItems();
+                allItems = new ArrayList<>(items.size());
+                for (Item item : items) {
+                    if (item instanceof TopLevelItem) {
+                        allItems.add((TopLevelItem)item);
+                    }
+                }
+            } else {
+                throw new IllegalStateException(report4folder + " is not an ItemGroup");
+            }
+        } else {
+            allItems = JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class);
+        }
 
         if (includePattern != null) {
             for (Item item : allItems) {

@@ -23,9 +23,12 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import com.cloudbees.hudson.plugins.folder.AbstractFolder;
+import hudson.model.TopLevelItem;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.CheckForNull;
@@ -34,6 +37,7 @@ import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.ge
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
+import org.jenkinsci.plugins.securityinspector.util.JenkinsHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponses;
@@ -54,6 +58,16 @@ public abstract class UserReportBuilder extends ReportBuilder {
         SortedSet<User> sortedUser = new TreeSet<>(getComparatorUser());
         sortedUser.addAll(User.getAll());
         return sortedUser;
+    }
+    
+        
+    public List<AbstractFolder> getAllFolders() {
+        return JenkinsHelper.getInstanceOrFail().getAllItems(AbstractFolder.class);
+    }
+    
+    @Nonnull
+    public String getDisplayName(@CheckForNull TopLevelItem item) {
+        return item != null ? item.getFullDisplayName() : "";
     }
     
     /**
