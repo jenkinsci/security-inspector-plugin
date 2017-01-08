@@ -23,9 +23,10 @@
  */
 package org.jenkinsci.plugins.securityinspector;
 
-import org.jenkinsci.plugins.securityinspector.util.JobFilter;
-import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
-import org.jenkinsci.plugins.securityinspector.util.UserFilter;
+import hudson.model.Computer;
+import hudson.model.TopLevelItem;
+import hudson.model.User;
+import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
@@ -35,51 +36,37 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class UserContext {
 
     @CheckForNull
-    private final JobFilter jobFilter;
+    private final List<TopLevelItem> selectedJobs;
     @CheckForNull
-    private final ComputerFilter slaveFilter;
+    private final List<Computer> selectedSlaves;
     @CheckForNull
-    private final UserFilter userFilter;
+    private final List<User> selectedUsers;
     @Nonnull
     private final String item;
 
-    public UserContext(@Nonnull JobFilter jobFilter, @Nonnull String item) {
-        this.jobFilter = jobFilter;
+    public UserContext(List<TopLevelItem> selectedJobs, 
+            List<Computer> selectedSlaves,
+            List<User> selectedUsers,
+            @Nonnull String item) {
+        this.selectedJobs = selectedJobs;
+        this.selectedSlaves = selectedSlaves;
+        this.selectedUsers = selectedUsers;
         this.item = item;
-
-        this.slaveFilter = null;
-        this.userFilter = null;
-    }
-
-    public UserContext(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
-        this.slaveFilter = slaveFilter;
-        this.item = item;
-
-        this.jobFilter = null;
-        this.userFilter = null;
-    }
-
-    public UserContext(@Nonnull UserFilter userFilter, @Nonnull String item) {
-        this.userFilter = userFilter;
-        this.item = item;
-
-        this.jobFilter = null;
-        this.slaveFilter = null;
     }
 
     @CheckForNull
-    public JobFilter getJobFilter() {
-        return jobFilter;
+    public List<TopLevelItem> getJobs() {
+        return selectedJobs;
     }
 
     @CheckForNull
-    public ComputerFilter getSlaveFilter() {
-        return slaveFilter;
+    public List<Computer> getSlaves() {
+        return selectedSlaves;
     }
 
     @CheckForNull
-    public UserFilter getUserFilter() {
-        return userFilter;
+    public List<User> getUsers() {
+        return selectedUsers;
     }
 
     @Nonnull

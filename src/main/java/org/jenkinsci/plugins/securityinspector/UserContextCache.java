@@ -23,14 +23,15 @@
  */
 package org.jenkinsci.plugins.securityinspector;
 
+import hudson.model.Computer;
+import hudson.model.TopLevelItem;
+import hudson.model.User;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
-import org.jenkinsci.plugins.securityinspector.util.ComputerFilter;
-import org.jenkinsci.plugins.securityinspector.util.JobFilter;
-import org.jenkinsci.plugins.securityinspector.util.UserFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -83,21 +84,12 @@ public class UserContextCache {
         return sessionId;
     }
 
-    public static void updateSearchCache(@Nonnull JobFilter jobFilter, @Nonnull String item) {
+    public static void updateSearchCache(List<TopLevelItem> selectedJobs,
+            List<Computer> selectedSlaves,
+            List<User> selectedUsers,
+            @Nonnull String item) {
         cleanCache();
         // Put Context to the map
-        INSTANCE.put(getSessionId(), new UserContext(jobFilter, item));
-    }
-
-    public static void updateSearchCache(@Nonnull ComputerFilter slaveFilter, @Nonnull String item) {
-        cleanCache();
-        // Put Context to the map
-        INSTANCE.put(getSessionId(), new UserContext(slaveFilter, item));
-    }
-
-    public static void updateSearchCache(@Nonnull UserFilter userFilter, @Nonnull String item) {
-        cleanCache();
-        // Put Context to the map
-        INSTANCE.put(getSessionId(), new UserContext(userFilter, item));
+        INSTANCE.put(getSessionId(), new UserContext(selectedJobs, selectedSlaves, selectedUsers, item));
     }
 }

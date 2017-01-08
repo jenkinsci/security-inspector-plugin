@@ -92,7 +92,8 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         }
         final String selectedItem = req.getParameter("selectedJob");
         UserFilter filter4user = new UserFilter(req);
-        UserContextCache.updateSearchCache(filter4user, selectedItem);
+        List<User> selectedUsers = filter4user.doFilter();
+        UserContextCache.updateSearchCache(null, null, selectedUsers, selectedItem);
     }
 
     //TODO: fix rawtype before the release
@@ -115,12 +116,11 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
             throw HttpResponses.error(404, "Context has not been found");
         }
 
-        final UserFilter userFilter = context.getUserFilter();
-        if (userFilter == null) {
+        final List<User> selectedUsers = context.getUsers();
+        if (selectedUsers == null) {
             throw HttpResponses.error(500, "The retrieved context does not contain user filter settings");
         }
 
-        List<User> selectedUsers = userFilter.doFilter();
         final Set<User> res = new HashSet<>(selectedUsers.size());
         for (User item : selectedUsers) {
             if (item != null) {

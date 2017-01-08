@@ -98,7 +98,8 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
         }
         String selectedItem = req.getParameter("selectedUser");
         ComputerFilter filter4slave = new ComputerFilter(req);
-        UserContextCache.updateSearchCache(filter4slave, selectedItem);
+        List<Computer> selectedSlaves = filter4slave.doFilter();
+        UserContextCache.updateSearchCache(null, selectedSlaves, null, selectedItem);
     }
 
     @Nonnull
@@ -110,12 +111,11 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
             throw HttpResponses.error(404, "Context has not been found");
         }
 
-        final ComputerFilter slaveFilter = context.getSlaveFilter();
-        if (slaveFilter == null) {
+        final List<Computer> selectedSlaves = context.getSlaves();
+        if (selectedSlaves == null) {
             throw HttpResponses.error(500, "The retrieved context does not contain slave filter settings");
         }
 
-        List<Computer> selectedSlaves = slaveFilter.doFilter();
         final Set<Computer> res = new HashSet<>(selectedSlaves.size());
         for (Computer item : selectedSlaves) {
             if (item != null) {

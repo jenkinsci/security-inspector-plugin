@@ -95,7 +95,15 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         }
         final String selectedItem = req.getParameter("selectedUser");
         JobFilter filters = new JobFilter(req);
-        UserContextCache.updateSearchCache(filters, selectedItem);
+        
+        // TODO: Ideally the plugin should not depend on the AllView existense
+        final AllView sourceView = getAllView();
+        if (sourceView == null) {
+            throw HttpResponses.error(404, "Cannot find the All view in the Jenkins root");
+        }
+
+        List<TopLevelItem> selectedJobs = filters.doFilter(sourceView);
+        UserContextCache.updateSearchCache(selectedJobs, null, null, selectedItem);
     }
 
     //TODO: fix rawtype before the release
@@ -151,18 +159,11 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
             throw HttpResponses.error(404, "Context has not been found");
         }
 
-        final JobFilter jobfilter = context.getJobFilter();
-        if (jobfilter == null) {
+        final List<TopLevelItem> selectedJobs = context.getJobs();
+        if (selectedJobs == null) {
             throw HttpResponses.error(500, "The retrieved context does not contain job filter settings");
         }
 
-        // TODO: Ideally the plugin should not depend on the AllView existense
-        final AllView sourceView = getAllView();
-        if (sourceView == null) {
-            throw HttpResponses.error(404, "Cannot find the All view in the Jenkins root");
-        }
-
-        List<TopLevelItem> selectedJobs = jobfilter.doFilter(sourceView);
         final Set<TopLevelItem> res = new HashSet<>(selectedJobs.size());
         for (TopLevelItem item : selectedJobs) {
             if (item != null) {
