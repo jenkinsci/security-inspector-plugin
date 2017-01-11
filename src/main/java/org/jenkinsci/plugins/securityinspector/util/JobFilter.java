@@ -141,21 +141,22 @@ public class JobFilter {
     @Restricted(NoExternalUse.class)
     public List<TopLevelItem> doFilter(@Nonnull AllView view) {
         final SortedSet<String> names = new TreeSet<>();
+        String itemName;
 
         // TODO: Switch to View.getAllItems() once it behaves according to the spec
-        final List<TopLevelItem> allItems = JenkinsHelper.getInstanceOrFail().getAllItems(TopLevelItem.class);
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
+        final List<TopLevelItem> allItems = jenkins.getAllItems(TopLevelItem.class);
 
         if (includePattern != null) {
             for (Item item : allItems) {
-                String itemName = item.getFullName();
+                itemName = item.getFullName();
                 if (includePattern.matcher(itemName).matches()) {
                     names.add(itemName);
                 }
             }
         } else {
             for (Item item : allItems) {
-                String itemName = item.getFullName();
+                itemName = item.getFullName();
                 names.add(itemName);
             }
         }
