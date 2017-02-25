@@ -1,6 +1,13 @@
 Changelog
 ====
 
+##### 0.3
+
+Release date: Feb 25, 2017
+
+* Added the `Build report for selected folder` option in the `Single user, multiple jobs` report.
+* API changes.
+
 ##### 0.2
 
 Release date: Dec 30, 2016
