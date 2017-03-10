@@ -107,12 +107,27 @@ public abstract class ReportBuilder implements ExtensionPoint {
         // Redirect to the search report page
         return HttpResponses.redirectTo("report");
     }
-
+    
     @Restricted(NoExternalUse.class)
-    public void doGoHome(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
-            throws IOException, ServletException, Descriptor.FormException {
-        JenkinsHelper.getInstanceOrFail().checkPermission(Jenkins.ADMINISTER);
-        rsp.sendRedirect("..");
+    public void doReportAction(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
+            throws ServletException, Descriptor.FormException, IOException {
+
+        final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+
+        SubmittedOperation action = SubmittedOperation.fromRequest(req);
+        switch (action) {
+            case GoHome:
+                rsp.sendRedirect("..");
+                break;
+
+            case Download:
+                // TODO
+                break;
+
+            default:
+                throw new Descriptor.FormException("Action " + action + " is not supported", "submit");
+        }
     }
 
     /**
@@ -121,7 +136,9 @@ public abstract class ReportBuilder implements ExtensionPoint {
     private enum SubmittedOperation {
 
         Submit,
-        Back;
+        Back,
+        GoHome,
+        Download;
 
         /**
          * Locates the operation in the submitted form.
