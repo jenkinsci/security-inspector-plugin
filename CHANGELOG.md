@@ -1,6 +1,13 @@
 Changelog
 ====
 
+##### 0.4
+
+Release date: Mar 15, 2017
+
+* Added the `Download` button in reports.
+* API changes.
+
 ##### 0.3
 
 Release date: Feb 25, 2017
