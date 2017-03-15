@@ -27,9 +27,14 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -62,7 +67,11 @@ public abstract class ReportBuilder implements ExtensionPoint {
 
     @Nonnull
     public abstract String getDescription();
-
+    
+    @Nonnull
+    @Restricted(NoExternalUse.class)
+    public abstract SecurityInspectorReport getReport();
+    
     @Nonnull
     public static ExtensionList<ReportBuilder> all() {
         return ExtensionList.lookup(ReportBuilder.class);
@@ -122,7 +131,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
                 break;
 
             case Download:
-                // TODO
+                downloadReport(rsp);
                 break;
 
             default:
@@ -131,7 +140,10 @@ public abstract class ReportBuilder implements ExtensionPoint {
     }
 
     /**
-     * Buttons: - Submit Jobs/Slaves/Users reports - Go to Home Page
+     * Buttons: 
+     * - Submit report 
+     * - Go to Home Page (for report and for configure report pages)
+     * - Download report
      */
     private enum SubmittedOperation {
 
@@ -149,7 +161,8 @@ public abstract class ReportBuilder implements ExtensionPoint {
          * the enum
          */
         @Nonnull
-        static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) throws Descriptor.FormException {
+        static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) 
+                throws Descriptor.FormException {
             final Map<?, ?> map = req.getParameterMap();
             for (SubmittedOperation val : SubmittedOperation.values()) {
                 if (map.containsKey(val.toString())) {
@@ -165,5 +178,28 @@ public abstract class ReportBuilder implements ExtensionPoint {
         ITEM,
         USER,
         COMPUTER
+    }
+    
+    public void downloadReport(@Nonnull StaplerResponse rsp) {
+        
+        SecurityInspectorReport report4Download = getReport();
+        
+        rsp.setContentType("text/csv");
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        f.setTimeZone(TimeZone.getTimeZone("UTC"));
+        rsp.setHeader("Content-Disposition", "attachment; "
+                + "filename=\"report-for-"
+                +report4Download.getItemForReport()
+                +"-" + f.format(new Date()) + ".csv\"");
+        
+        try (OutputStream outputStream = rsp.getOutputStream()) {
+            String report = report4Download.getReportInCSV();
+            outputStream.write(report.getBytes(StandardCharsets.UTF_8));
+            outputStream.close();
+            outputStream.flush();
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        
     }
 }

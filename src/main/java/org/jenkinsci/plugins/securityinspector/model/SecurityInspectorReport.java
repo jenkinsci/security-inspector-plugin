@@ -59,7 +59,10 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     private final Set<TRow> rows;
     @Nonnull
     private final Set<TColumnItem> columns;
-
+    
+    @Nonnull
+    public abstract String getItemForReport();
+    
     /*package*/
     SecurityInspectorReport() {
         this.entries = new MultiKeyMap();
@@ -87,7 +90,7 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     public Set<TColumnItem> getColumns() {
         return columns;
     }
-    
+
     @CheckForNull
     public final TEntryReport getEntry(@Nonnull TRow row, @Nonnull TColumnItem column) {
         final Object object = entries.get(row, column);
@@ -204,4 +207,62 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
      * @return {@code true} if the check passed
      */
     public abstract boolean isEntryReportOk(@Nonnull TRow row, @Nonnull TColumnItem column, @Nonnull TEntryReport reportEntry);
+
+    public String[][] getReportInMatrix() {
+        
+        Set<TColumnGroup> allGroups = this.getGroups();
+        Set<TRow> allRows = this.getRows();
+        
+        Set<TColumnItem> sortedColumns = new TreeSet<>(new Comparator<TColumnItem>() {
+            public int compare(TColumnItem o1, TColumnItem o2) {
+                return o1.toString().compareTo(o2.toString());
+            }
+        });
+        sortedColumns.addAll(this.columns);
+        
+        String[][] report = new String[this.getColumns().size()+1][allRows.size()+2];
+
+        report[0][0]="Groups";
+        report[0][1]="Permissions";
+        
+        // Title
+        int NColumn = 1;
+        for (TColumnItem column : sortedColumns) {
+            report[NColumn][0] = this.getGroupTitle(getGroupOfItem(column));
+            report[NColumn][1] = this.getColumnTitle(column);
+            NColumn++;
+        }
+        
+        // Body
+        int NRow = 2;
+        for (TRow row : allRows) {
+            report[0][NRow] = this.getRowTitle(row);
+            NColumn = 1;
+            for (TColumnItem column : sortedColumns){
+                report[NColumn][NRow] = this.getEntries().get(row, column).toString();
+                NColumn++;
+            }
+            NRow++;
+        }
+        
+        return report;
+    }
+    
+    public String getReportInCSV() {
+        
+        String[][] report = getReportInMatrix();
+        StringBuilder reportCSV = new StringBuilder();
+        
+        // For Microsoft Exel
+        reportCSV.append("sep=,").append("\n");
+        
+        for (int NRow = 0; NRow < this.getRows().size()+2; NRow++) {    
+            for (int NColumn = 0; NColumn < this.getColumns().size()+1; NColumn++) {
+                reportCSV.append(report[NColumn][NRow]).append(",");
+            }
+            reportCSV.append("\n");
+        }
+
+        return reportCSV.toString();
+    }
 }

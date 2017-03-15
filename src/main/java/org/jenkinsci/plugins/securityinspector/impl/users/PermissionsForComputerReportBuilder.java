@@ -126,9 +126,8 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
     }
 
     //TODO: Rename Slave => Node
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public SecurityInspectorReport getReportSlave() {
+    @Override
+    public SecurityInspectorReport getReport() {
         Set<Computer> computers = getRequestedSlaves();
         Set<Computer> slaves = new HashSet<>();
         for (Computer c : computers) {
@@ -174,6 +173,12 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
 
         /**package*/ ReportImpl(@Nonnull User user) {
             this.user4report = user;
+        }
+        
+        @Nonnull
+        @Override
+        public String getItemForReport() {
+            return user4report.getDisplayName();
         }
         
         @Override

@@ -97,9 +97,8 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
     }
 
     //TODO: fix rawtype before the release
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public SecurityInspectorReport getReportUser() {
+    @Override
+    public SecurityInspectorReport getReport() {
         Set<User> users = getRequestedUsers();
         Item job = getRequestedJob();
 
@@ -137,6 +136,12 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
 
         /**package*/ ReportImpl(@Nonnull Item job) {
             this.job4report = job;
+        }
+        
+        @Nonnull
+        @Override
+        public String getItemForReport() {
+            return job4report.getDisplayName();
         }
 
         @Override
