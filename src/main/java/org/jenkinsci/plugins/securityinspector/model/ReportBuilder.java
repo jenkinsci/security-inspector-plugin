@@ -184,7 +184,8 @@ public abstract class ReportBuilder implements ExtensionPoint {
         
         SecurityInspectorReport report4Download = getReport();
         
-        rsp.setContentType("text/csv");
+        rsp.setCharacterEncoding("UTF_8");
+        rsp.setContentType("text/csv;charset=UTF-8");
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         f.setTimeZone(TimeZone.getTimeZone("UTC"));
         rsp.setHeader("Content-Disposition", "attachment; "

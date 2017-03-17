@@ -210,10 +210,10 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
 
     public String[][] getReportInMatrix() {
         
-        Set<TColumnGroup> allGroups = this.getGroups();
         Set<TRow> allRows = this.getRows();
         
         Set<TColumnItem> sortedColumns = new TreeSet<>(new Comparator<TColumnItem>() {
+            @Override
             public int compare(TColumnItem o1, TColumnItem o2) {
                 return o1.toString().compareTo(o2.toString());
             }
