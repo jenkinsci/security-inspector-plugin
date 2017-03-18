@@ -41,7 +41,7 @@
                 <br/> 
                 <f:block>                 
                     <f:submit name="GoHome" value="${%Back}" />
-                    <f:submit name="Download" value="${%Download}" />
+                    <f:submit name="Download" value="${%Download as CSV}" />
                 </f:block>
             </f:form>
         </l:main-panel>
