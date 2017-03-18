@@ -181,9 +181,8 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
             this.user4report = user;
         }
         
-        @Nonnull
         @Override
-        public String getItemForReport() {
+        public String getReportTargetName() {
             return user4report.getDisplayName();
         }
         

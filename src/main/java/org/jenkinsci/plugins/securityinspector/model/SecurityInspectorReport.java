@@ -60,14 +60,18 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     @Nonnull
     private final Set<TColumnItem> columns;
     
+    /**
+     * Get report target name (e.g. user or job)
+     * @return localisable full display name
+     */
     @Nonnull
-    public abstract String getItemForReport();
+    public abstract String getReportTargetName();
     
     /*package*/
     SecurityInspectorReport() {
         this.entries = new MultiKeyMap();
         this.groups = new HashSet<>();
-        this.rows = new TreeSet<>(getComparator());
+        this.rows = new TreeSet<>(getRowComparator());
         this.columns = new HashSet<>();
     }
 
@@ -126,11 +130,24 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     }
 
     @Nonnull
-    public Comparator<TRow> getComparator() {
+    public Comparator<TRow> getRowComparator() {
         return new Comparator<TRow>() {
             @Override
             public int compare(TRow o1, TRow o2) {
                 return getRowTitle(o1).compareTo(getRowTitle(o2));
+            }
+        };
+    }
+    
+    @Nonnull
+    public Comparator<TColumnItem> getColumnComparator() {
+        return new Comparator<TColumnItem>() {
+            @Override
+            public int compare(TColumnItem o1, TColumnItem o2) {
+                String o1def = getGroupTitle(getGroupOfItem(o1));
+                String o2def = getGroupTitle(getGroupOfItem(o2));
+                int cmp = o1def.compareTo(o2def);
+                return cmp != 0 ? cmp : getColumnTitle(o1).compareTo(getColumnTitle(o2));
             }
         };
     }
@@ -208,16 +225,11 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
      */
     public abstract boolean isEntryReportOk(@Nonnull TRow row, @Nonnull TColumnItem column, @Nonnull TEntryReport reportEntry);
 
-    public String[][] getReportInMatrix() {
+    private String[][] getReportInMatrix() {
         
         Set<TRow> allRows = this.getRows();
         
-        Set<TColumnItem> sortedColumns = new TreeSet<>(new Comparator<TColumnItem>() {
-            @Override
-            public int compare(TColumnItem o1, TColumnItem o2) {
-                return o1.toString().compareTo(o2.toString());
-            }
-        });
+        Set<TColumnItem> sortedColumns = new TreeSet<>(getColumnComparator());
         sortedColumns.addAll(this.columns);
         
         String[][] report = new String[this.getColumns().size()+1][allRows.size()+2];
@@ -239,7 +251,8 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
             report[0][NRow] = this.getRowTitle(row);
             NColumn = 1;
             for (TColumnItem column : sortedColumns){
-                report[NColumn][NRow] = this.getEntries().get(row, column).toString();
+                Object entry = this.getEntries().get(row, column);
+                report[NColumn][NRow] = entry != null ? entry.toString() : "null";
                 NColumn++;
             }
             NRow++;
@@ -248,7 +261,7 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
         return report;
     }
     
-    public String getReportInCSV() {
+    String getReportInCSV() {
         
         String[][] report = getReportInMatrix();
         StringBuilder reportCSV = new StringBuilder();

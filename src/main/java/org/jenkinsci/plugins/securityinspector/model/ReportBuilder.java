@@ -118,7 +118,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
     }
     
     @Restricted(NoExternalUse.class)
-    public void doReportAction(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
+    public void doProcessReportAction(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
             throws ServletException, Descriptor.FormException, IOException {
 
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
@@ -131,7 +131,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
                 break;
 
             case Download:
-                downloadReport(rsp);
+                doDownloadReport(rsp);
                 break;
 
             default:
@@ -180,7 +180,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
         COMPUTER
     }
     
-    public void downloadReport(@Nonnull StaplerResponse rsp) {
+    private void doDownloadReport(@Nonnull StaplerResponse rsp) {
         
         SecurityInspectorReport report4Download = getReport();
         
@@ -190,7 +190,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
         f.setTimeZone(TimeZone.getTimeZone("UTC"));
         rsp.setHeader("Content-Disposition", "attachment; "
                 + "filename=\"report-for-"
-                +report4Download.getItemForReport()
+                +report4Download.getReportTargetName()
                 +"-" + f.format(new Date()) + ".csv\"");
         
         try (OutputStream outputStream = rsp.getOutputStream()) {

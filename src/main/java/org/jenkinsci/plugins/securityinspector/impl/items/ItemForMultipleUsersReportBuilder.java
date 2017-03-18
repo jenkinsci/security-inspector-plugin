@@ -138,9 +138,8 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
             this.job4report = job;
         }
         
-        @Nonnull
         @Override
-        public String getItemForReport() {
+        public String getReportTargetName() {
             return job4report.getDisplayName();
         }
 

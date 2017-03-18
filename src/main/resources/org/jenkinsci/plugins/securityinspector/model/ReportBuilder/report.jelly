@@ -35,7 +35,7 @@
             </h1>
              
             <!-- Report with a table and the return button -->     
-            <f:form method="post" name="config" action="reportAction">
+            <f:form method="post" name="config" action="processReportAction">
                 <st:include page="reportBody.jelly" optional="false"/>
                 <br/>
                 <br/> 
