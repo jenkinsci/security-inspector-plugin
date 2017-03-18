@@ -60,7 +60,6 @@ public abstract class UserReportBuilder extends ReportBuilder {
         return sortedUser;
     }
     
-        
     public List<AbstractFolder> getAllFolders() {
         return JenkinsHelper.getInstanceOrFail().getAllItems(AbstractFolder.class);
     }

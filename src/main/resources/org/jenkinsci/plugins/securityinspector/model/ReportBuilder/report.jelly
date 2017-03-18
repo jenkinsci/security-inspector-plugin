@@ -35,12 +35,13 @@
             </h1>
              
             <!-- Report with a table and the return button -->     
-            <f:form method="post" name="config" action="goHome">
+            <f:form method="post" name="config" action="processReportAction">
                 <st:include page="reportBody.jelly" optional="false"/>
                 <br/>
                 <br/> 
                 <f:block>                 
-                    <f:submit name="goHomeButton" value="${%Back}" />
+                    <f:submit name="GoHome" value="${%Back}" />
+                    <f:submit name="Download" value="${%Download as CSV}" />
                 </f:block>
             </f:form>
         </l:main-panel>

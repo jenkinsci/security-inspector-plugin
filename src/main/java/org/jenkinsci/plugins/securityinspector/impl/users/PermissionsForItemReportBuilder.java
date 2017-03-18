@@ -107,9 +107,8 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
     }
 
     //TODO: fix rawtype before the release
-    @Nonnull
-    @Restricted(NoExternalUse.class)
-    public SecurityInspectorReport getReportJob() {
+    @Override
+    public SecurityInspectorReport getReport() {
         Set<TopLevelItem> items = getRequestedJobs();
         User user = getRequestedUser();
         final ReportImpl report;
@@ -180,6 +179,11 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
 
         /**package*/ ReportImpl(@Nonnull User user) {
             this.user4report = user;
+        }
+        
+        @Override
+        public String getReportTargetName() {
+            return user4report.getDisplayName();
         }
         
         @Override

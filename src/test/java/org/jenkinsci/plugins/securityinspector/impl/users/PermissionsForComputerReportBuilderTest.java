@@ -24,10 +24,13 @@
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
 import hudson.model.Computer;
+import hudson.model.TopLevelItem;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Set;
 import javax.annotation.CheckForNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.jenkinsci.plugins.securityinspector.impl.items.ItemForMultipleUsersReportBuilder;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
 import org.junit.Assert;
@@ -124,5 +127,27 @@ public class PermissionsForComputerReportBuilderTest extends ReportBuilderTestBa
 
         PermissionReportAssert.assertHasNotPermissions(report, j.jenkins.getComputer("slave1"), 
                 Computer.CONNECT, Computer.CREATE, Computer.BUILD, Computer.CONFIGURE, Computer.DELETE, Computer.DISCONNECT);
+    }
+    
+    @Test
+    public void shouldDownloadReport4Admin() throws Exception {
+        
+        initializeDefaultMatrixAuthSecurity();
+        final PermissionsForComputerReportBuilder builder = getBuilder();
+
+        final PermissionsForComputerReportBuilder.ReportImpl report = new PermissionsForComputerReportBuilder.ReportImpl(j.jenkins.getUser("admin"));
+        assertNotNull(report);
+        Set<Computer> computers = new HashSet<>(Arrays.asList(j.jenkins.getComputers()));
+        assertNotNull(computers);
+        report.generateReport(computers);
+        
+        assertThat("Report target name must be equal to 'admin'", report.getReportTargetName().equals("admin")); 
+
+        String reportInCSV = report.getReportInCSV();
+        assertNotNull(reportInCSV);
+        
+        for (Computer computer : computers) {
+            assertThat("CSV Report must had row " + computer, reportInCSV.contains(computer.getDisplayName()));
+        }
     }
 }
