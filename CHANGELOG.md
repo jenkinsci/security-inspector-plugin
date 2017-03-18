@@ -3,10 +3,10 @@ Changelog
 
 ##### 0.4
 
-Release date: Mar 15, 2017
+Release date: Mar 18, 2017
 
-* Added the `Download` button in reports.
-* API changes.
+* Added the `Download as CSV` button in reports.
+* Internal API changes.
 
 ##### 0.3
 
