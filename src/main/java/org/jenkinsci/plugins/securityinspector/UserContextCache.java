@@ -35,7 +35,6 @@ import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.ge
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(NoExternalUse.class)
 public class UserContextCache {
 
     //TODO: fix concurrency issues
