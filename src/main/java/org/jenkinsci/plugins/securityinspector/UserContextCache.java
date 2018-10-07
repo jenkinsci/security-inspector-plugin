@@ -33,8 +33,10 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
+@Restricted(Beta.class)
 public class UserContextCache {
 
     //TODO: fix concurrency issues

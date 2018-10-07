@@ -30,9 +30,10 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(NoExternalUse.class)
+@Restricted(Beta.class)
 public class UserContext {
 
     @CheckForNull
