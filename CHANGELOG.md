@@ -1,6 +1,14 @@
 Changelog
 ====
 
+##### 0.5
+
+Release date: Oct 10, 2018
+
+* [PR #7](https://github.com/jenkinsci/security-inspector-plugin/pull/7) -
+Switch context-related API classes to Beta availability so that they can be used in plugins.
+* Update Jenkins minimal requirement to 2.60.3
+
 ##### 0.4
 
 Release date: Mar 18, 2017
