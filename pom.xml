@@ -16,7 +16,7 @@
     <artifactId>security-inspector</artifactId>
     <version>0.6-SNAPSHOT</version>
     <packaging>hpi</packaging>
-    <url>https://wiki.jenkins.io/display/JENKINS/Security+Inspector+Plugin</url>
+    <url>https://github.com/jenkinsci/security-inspector-plugin</url>
 
     <licenses>
         <license>
