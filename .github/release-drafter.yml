@@ -1,0 +1,2 @@
+_extends: .github
+tag-template: security-inspector-$NEXT_MINOR_VERSION
