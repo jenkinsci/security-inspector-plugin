@@ -1,5 +1,9 @@
-Changelog
+Changelog (archive)
 ====
+
+##### Newer versions
+
+See [GitHub releases](https://github.com/jenkinsci/security-inspector-plugin/releases).
 
 ##### 0.5
 

@@ -38,6 +38,11 @@ Now this plugin can created 3 reports:
  * Display users permissions for the specified item.
  * Users for the report can be selected using regular expressions.
 
+### Changelog
+
+* For recent versions see [GitHub releases](https://github.com/jenkinsci/security-inspector-plugin/releases)
+* For versions 0.5 and older, see [CHAMGELOG.md](https://github.com/jenkinsci/security-inspector-plugin/blob/master/CHANGELOG.md)
+
 ### License
 
 [MIT License](https://opensource.org/licenses/mit-license.php)
