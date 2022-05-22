@@ -7,14 +7,14 @@
     </parent>
   
     <properties>
+        <changelist>999999-SNAPSHOT</changelist>
         <jenkins.version>2.60.3</jenkins.version>
         <java.level>8</java.level>
     </properties>
 
     <name>Security Inspector Plugin</name>
-    <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>security-inspector</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
     <url>https://github.com/jenkinsci/security-inspector-plugin</url>
 
@@ -49,10 +49,10 @@
     </developers>
   
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+        <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-        <tag>HEAD</tag>
+        <tag>${scmTag}</tag>
     </scm>
   
     <dependencies>
