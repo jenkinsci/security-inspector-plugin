@@ -1,8 +1,10 @@
 Security Inspector Plugin
 ====
 
-[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/security-inspector.svg)](https://plugins.jenkins.io/security-inspector)
-[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/security-inspector.svg?color=blue)](https://plugins.jenkins.io/security-inspector)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins/security-inspector-plugin/master)](https://ci.jenkins.io/job/plugins/job/security-inspector-plugin/)
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/security-inspector.svg)](https://plugins.jenkins.io/security-inspector/)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/security-inspector.svg?color=blue)](https://plugins.jenkins.io/security-inspector/)
+[![Contributors](https://img.shields.io/github/contributors/jenkinsci/security-inspector-plugin.svg)](https://github.com/jenkinsci/security-inspector-plugin/graphs/contributors)
 
 This project is a [Jenkins](https://jenkins.io) plugin, which allows checking user permissions
 for particular jobs and nodes.
