@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>role-strategy</artifactId>
-            <version>2.9.0</version>
+            <version>508.v2a_f05b_05e9d8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
