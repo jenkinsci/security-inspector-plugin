@@ -1,3 +1,5 @@
+# Note: additional setup is required, see https://www.jenkins.io/redirect/continuous-delivery-of-plugins
+
 name: cd
 on:
   workflow_dispatch:
@@ -12,7 +14,7 @@ jobs:
       should_release: ${{ steps.verify-ci-status.outputs.result == 'success' && steps.interesting-categories.outputs.interesting == 'true' }}
     steps:
       - name: Verify CI status
-        uses: jenkins-infra/verify-ci-status-action@v1.2.0
+        uses: jenkins-infra/verify-ci-status-action@v1.2.2
         id: verify-ci-status
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check interesting categories
-        uses: jenkins-infra/interesting-category-action@v1.1.0
+        uses: jenkins-infra/interesting-category-action@v1.2.1
         id: interesting-categories
         if: steps.verify-ci-status.outputs.result == 'success'
         with:
