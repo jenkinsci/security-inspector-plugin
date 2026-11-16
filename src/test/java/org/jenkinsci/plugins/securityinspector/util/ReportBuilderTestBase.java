@@ -79,6 +79,19 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         assertThat("Description must be offered for the item", rootPageStr, containsString(builder.getDescription()));
         assertThat("Display name must be offered for the item", rootPageStr, containsString(builder.getDisplayName()));
     }
+
+    @Test
+    public void shouldRejectGetRequestsForFilterSubmit() throws Exception {
+        final T builder = getBuilder();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+
+        try {
+            wc.goTo("security-inspector/" + builder.getIndex() + "/filterSubmit");
+            org.junit.Assert.fail("GET request must be rejected");
+        } catch (org.apache.commons.httpclient.HttpException expected) {
+            // @RequirePOST rejects GET requests.
+        }
+    }
     
     protected void initializeDefaultMatrixAuthSecurity() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -147,5 +160,6 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
             final JobProperty prop = new AuthorizationMatrixProperty(permissions);
             projectInFolder.addProperty(prop);
         }
+        
     }
 }
