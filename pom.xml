@@ -70,7 +70,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1447.v4cb_b_539b_5321</version>
+      <version>1514.vb_01eb_014e7d4</version>
     </dependency>
 
     <dependency>
