@@ -58,6 +58,10 @@ public class SecurityInspectorAction extends ManagementLink {
         return "security-inspector";
     }
 
+    public String getCategoryName() {
+        return "SECURITY";
+    }
+
     @CheckForNull
     @Restricted(NoExternalUse.class)
     public ReportBuilder getDynamic(@Nonnull String buiderName) {

@@ -156,5 +156,6 @@ public class ReportBuilderTestBase<T extends ReportBuilder> {
             final JobProperty prop = new AuthorizationMatrixProperty(permissions);
             projectInFolder.addProperty(prop);
         }
+        
     }
 }
