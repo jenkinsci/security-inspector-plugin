@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.securityinspector;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import hudson.model.Computer;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
@@ -31,15 +33,13 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(Beta.class)
 public class UserContextCache {
 
-    //TODO: fix concurrency issues
+    // TODO: fix concurrency issues
     final Map<String, UserContext> contextMap = new HashMap<>();
 
     private static final UserContextCache INSTANCE = new UserContextCache();
@@ -85,7 +85,8 @@ public class UserContextCache {
         return sessionId;
     }
 
-    public static void updateSearchCache(List<TopLevelItem> selectedJobs,
+    public static void updateSearchCache(
+            List<TopLevelItem> selectedJobs,
             List<Computer> selectedSlaves,
             List<User> selectedUsers,
             @Nonnull String item) {

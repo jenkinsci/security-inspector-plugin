@@ -36,8 +36,7 @@ import org.kohsuke.stapler.Stapler;
 @Extension
 public class SecurityInspectorAction extends ManagementLink {
 
-    public SecurityInspectorAction() {
-    }
+    public SecurityInspectorAction() {}
 
     @Override
     public String getIconFileName() {
@@ -77,11 +76,11 @@ public class SecurityInspectorAction extends ManagementLink {
     @Nonnull
     @Restricted(NoExternalUse.class)
     public List<ReportBuilder> getReportBuilders(@Nonnull String type) {
-        //TODO: Illegal argument handling
+        // TODO: Illegal argument handling
         return ReportBuilder.all(ReportBuilder.Type.valueOf(type));
     }
 
-    //TODO: Handle IllegalStateException ?
+    // TODO: Handle IllegalStateException ?
     /**
      * Gets identifier of the current session.
      *

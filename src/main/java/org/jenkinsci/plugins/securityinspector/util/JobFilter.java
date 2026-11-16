@@ -24,11 +24,12 @@
 
 package org.jenkinsci.plugins.securityinspector.util;
 
+import static hudson.model.Descriptor.findByDescribableClassName;
+
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.AllView;
 import hudson.model.Descriptor;
-import static hudson.model.Descriptor.findByDescribableClassName;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -64,7 +65,7 @@ public class JobFilter {
      */
     @CheckForNull
     private final String includeRegex;
-    
+
     /**
      * Folder name for report
      */
@@ -103,8 +104,7 @@ public class JobFilter {
      * @throws ServletException Cannot retrieve submitted form in Stapler
      */
     @Restricted(NoExternalUse.class)
-    public JobFilter(@Nonnull StaplerRequest req)
-            throws Descriptor.FormException, ServletException {
+    public JobFilter(@Nonnull StaplerRequest req) throws Descriptor.FormException, ServletException {
         if (req.getParameter("useincluderegex") != null) {
             includeRegex = Util.nullify(req.getParameter("_.includeRegex"));
             if (includeRegex == null) {
@@ -116,7 +116,7 @@ public class JobFilter {
             includeRegex = null;
             includePattern = null;
         }
-        
+
         if (req.getParameter("usefolder") != null) {
             report4folder = req.getParameter("selectedFolder");
         } else {
@@ -164,11 +164,11 @@ public class JobFilter {
         if (report4folder != null) {
             TopLevelItem folder = JenkinsHelper.getInstanceOrFail().getItem(report4folder);
             if (folder instanceof ItemGroup) {
-                Collection<Item> items = ((ItemGroup)folder).getItems();
+                Collection<Item> items = ((ItemGroup) folder).getItems();
                 allItems = new ArrayList<>(items.size());
                 for (Item item : items) {
                     if (item instanceof TopLevelItem) {
-                        allItems.add((TopLevelItem)item);
+                        allItems.add((TopLevelItem) item);
                     }
                 }
             } else {
@@ -197,9 +197,10 @@ public class JobFilter {
         for (String n : names) {
             TopLevelItem item = jenkins.getItemByFullName(n, TopLevelItem.class);
             // Add if no status filter or filter matches enabled/disabled status:
-            if (item != null && (localStatusFilter == null
-                    || !(item instanceof AbstractProject)
-                    || ((AbstractProject) item).isDisabled() ^ localStatusFilter)) {
+            if (item != null
+                    && (localStatusFilter == null
+                            || !(item instanceof AbstractProject)
+                            || ((AbstractProject) item).isDisabled() ^ localStatusFilter)) {
                 items.add(item);
             }
         }

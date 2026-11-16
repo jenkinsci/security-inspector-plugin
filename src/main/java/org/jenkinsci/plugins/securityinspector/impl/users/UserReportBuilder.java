@@ -23,17 +23,19 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import com.cloudbees.hudson.plugins.folder.AbstractFolder;
 import hudson.model.TopLevelItem;
 import hudson.model.User;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
@@ -52,23 +54,23 @@ public abstract class UserReportBuilder extends ReportBuilder {
     public final Type getType() {
         return Type.USER;
     }
-    
+
     @Nonnull
     public Collection<User> getPossibleUsers() {
         SortedSet<User> sortedUser = new TreeSet<>(getComparatorUser());
         sortedUser.addAll(User.getAll());
         return sortedUser;
     }
-    
+
     public List<AbstractFolder> getAllFolders() {
         return JenkinsHelper.getInstanceOrFail().getAllItems(AbstractFolder.class);
     }
-    
+
     @Nonnull
     public String getDisplayName(@CheckForNull TopLevelItem item) {
         return item != null ? item.getFullDisplayName() : "";
     }
-    
+
     /**
      * Retrieves display name of a user.
      * @param user User
@@ -88,7 +90,7 @@ public abstract class UserReportBuilder extends ReportBuilder {
             }
         };
     }
-    
+
     /**
      * Get selected user from context
      *
@@ -99,11 +101,11 @@ public abstract class UserReportBuilder extends ReportBuilder {
     public User getRequestedUser() throws HttpResponses.HttpResponseException {
         final UserContext context = UserContextCache.getInstance().get(getSessionId());
         if (context == null) {
-            // TODO: 
+            // TODO:
             throw HttpResponses.error(404, "Context hae not been found");
         }
         String userId = context.getItem();
-        User user = User.get(userId, false, null);
+        User user = User.get(userId, false, Collections.emptyMap());
         if (user == null) {
             throw HttpResponses.error(404, "User " + userId + " does not exist");
         }

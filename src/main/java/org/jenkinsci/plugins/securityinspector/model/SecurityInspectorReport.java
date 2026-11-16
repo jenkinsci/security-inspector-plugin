@@ -23,10 +23,10 @@
  */
 package org.jenkinsci.plugins.securityinspector.model;
 
-import java.util.Set;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -57,20 +57,23 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
 
     @Nonnull
     private final MultiKeyMap entries;
+
     @Nonnull
     private final Set<TColumnGroup> groups;
+
     @Nonnull
     private final Set<TRow> rows;
+
     @Nonnull
     private final Set<TColumnItem> columns;
-    
+
     /**
      * Get report target name (e.g. user or job)
      * @return localisable full display name
      */
     @Nonnull
     public abstract String getReportTargetName();
-    
+
     /*package*/
     SecurityInspectorReport() {
         this.entries = new MultiKeyMap();
@@ -102,15 +105,18 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
     @CheckForNull
     public final TEntryReport getEntry(@Nonnull TRow row, @Nonnull TColumnItem column) {
         final Object object = entries.get(row, column);
-        return (TEntryReport)object;
+        return (TEntryReport) object;
     }
 
     public void forRow(@Nonnull TRow row, @Nonnull Runnable runnable) {
         // Just run the runnable by default
         runnable.run();
     }
-    
-    public final void generateReport(final @Nonnull Set<TRow> rows, final @Nonnull Set<TColumnItem> columns, final @Nonnull Set<TColumnGroup> groups) {
+
+    public final void generateReport(
+            final @Nonnull Set<TRow> rows,
+            final @Nonnull Set<TColumnItem> columns,
+            final @Nonnull Set<TColumnGroup> groups) {
         this.groups.addAll(groups);
         this.rows.addAll(rows);
         this.columns.addAll(columns);
@@ -126,7 +132,7 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
             });
         }
     }
-    
+
     protected final void fillRowByResult(@Nonnull TRow row, TEntryReport result) {
         for (TColumnItem column : columns) {
             entries.put(row, column, result);
@@ -142,7 +148,7 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
             }
         };
     }
-    
+
     @Nonnull
     public Comparator<TColumnItem> getColumnComparator() {
         return new Comparator<TColumnItem>() {
@@ -227,20 +233,21 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
      * @param reportEntry Generated report entry
      * @return {@code true} if the check passed
      */
-    public abstract boolean isEntryReportOk(@Nonnull TRow row, @Nonnull TColumnItem column, @Nonnull TEntryReport reportEntry);
+    public abstract boolean isEntryReportOk(
+            @Nonnull TRow row, @Nonnull TColumnItem column, @Nonnull TEntryReport reportEntry);
 
     protected final String[][] getReportInMatrix() {
-        
+
         Set<TRow> allRows = this.getRows();
-        
+
         Set<TColumnItem> sortedColumns = new TreeSet<>(getColumnComparator());
         sortedColumns.addAll(this.columns);
-        
-        String[][] report = new String[this.getColumns().size()+1][allRows.size()+2];
 
-        report[0][0]="Groups";
-        report[0][1]="Permissions";
-        
+        String[][] report = new String[this.getColumns().size() + 1][allRows.size() + 2];
+
+        report[0][0] = "Groups";
+        report[0][1] = "Permissions";
+
         // Title
         int NColumn = 1;
         for (TColumnItem column : sortedColumns) {
@@ -248,37 +255,37 @@ public abstract class SecurityInspectorReport<TRow, TColumnGroup, TColumnItem, T
             report[NColumn][1] = this.getColumnTitle(column);
             NColumn++;
         }
-        
+
         // Body
         int NRow = 2;
         for (TRow row : allRows) {
             report[0][NRow] = this.getRowTitle(row);
             NColumn = 1;
-            for (TColumnItem column : sortedColumns){
+            for (TColumnItem column : sortedColumns) {
                 Object entry = this.getEntries().get(row, column);
                 report[NColumn][NRow] = entry != null ? entry.toString() : "null";
                 NColumn++;
             }
             NRow++;
         }
-        
+
         return report;
     }
-    
+
     @Restricted(NoExternalUse.class)
     public String getReportInCSV() {
-        
+
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
         jenkins.checkPermission(Jenkins.ADMINISTER);
-        
+
         String[][] report = getReportInMatrix();
         StringBuilder reportCSV = new StringBuilder();
-        
+
         // For Microsoft Exel
         reportCSV.append("sep=,").append("\n");
-        
-        for (int NRow = 0; NRow < this.getRows().size()+2; NRow++) {    
-            for (int NColumn = 0; NColumn < this.getColumns().size()+1; NColumn++) {
+
+        for (int NRow = 0; NRow < this.getRows().size() + 2; NRow++) {
+            for (int NColumn = 0; NColumn < this.getColumns().size() + 1; NColumn++) {
                 reportCSV.append(report[NColumn][NRow]).append(",");
             }
             reportCSV.append("\n");

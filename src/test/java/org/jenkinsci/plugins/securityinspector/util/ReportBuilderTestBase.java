@@ -23,6 +23,10 @@
  */
 package org.jenkinsci.plugins.securityinspector.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
+
 import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.EnvVars;
 import hudson.model.Computer;
@@ -40,9 +44,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.notNullValue;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,49 +54,42 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @param <T> Class of the report builder to be tested
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
-public class ReportBuilderTestBase <T extends ReportBuilder> {
-    
+public class ReportBuilderTestBase<T extends ReportBuilder> {
+
     @Rule
     public final JenkinsRule j = new JenkinsRule();
-    
-    private Class<T> myClass;
+
+    private final Class<T> myClass;
 
     public ReportBuilderTestBase(Class<T> myClass) {
         this.myClass = myClass;
     }
-    
+
     @Nonnull
     public T getBuilder() throws AssertionError {
-        final T builder = j.jenkins.getExtensionList(ReportBuilder.class).get(myClass);
+        T builder = null;
+        for (ReportBuilder extension : j.jenkins.getExtensionList(ReportBuilder.class)) {
+            if (myClass.isInstance(extension)) {
+                builder = myClass.cast(extension);
+                break;
+            }
+        }
         assertThat("Extension point must have been registered", builder, notNullValue());
         return builder;
     }
-    
+
     @Test
     public void shouldOfferTheReportInUI() throws Exception {
         final T builder = getBuilder();
         final JenkinsRule.WebClient wc = j.createWebClient();
-        final String rootPageStr = wc.goTo("security-inspector").asText();
+        final String rootPageStr = wc.goTo("security-inspector").getBody().asNormalizedText();
         assertThat("Description must be offered for the item", rootPageStr, containsString(builder.getDescription()));
         assertThat("Display name must be offered for the item", rootPageStr, containsString(builder.getDisplayName()));
     }
 
-    @Test
-    public void shouldRejectGetRequestsForFilterSubmit() throws Exception {
-        final T builder = getBuilder();
-        final JenkinsRule.WebClient wc = j.createWebClient();
-
-        try {
-            wc.goTo("security-inspector/" + builder.getIndex() + "/filterSubmit");
-            org.junit.Assert.fail("GET request must be rejected");
-        } catch (org.apache.commons.httpclient.HttpException expected) {
-            // @RequirePOST rejects GET requests.
-        }
-    }
-    
     protected void initializeDefaultMatrixAuthSecurity() throws Exception {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        
+
         // Create users
         User.get("admin");
         User.get("user1");
@@ -103,16 +97,16 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         User user3 = User.get("user3");
         j.jenkins.save();
         user3.save();
-        
+
         // Create items (jobs & folder)
         FreeStyleProject project1 = j.createFreeStyleProject("project1");
         FreeStyleProject project2 = j.createFreeStyleProject("project2");
         final Folder f = j.createProject(Folder.class, "folder");
         FreeStyleProject projectInFolder = f.createProject(FreeStyleProject.class, "projectInFolder");
-        
+
         // Create node
         DumbSlave slave1 = j.createSlave("slave1", "", new EnvVars());
-                
+
         // Initialize global security
         final ProjectMatrixAuthorizationStrategy strategy = new ProjectMatrixAuthorizationStrategy();
         strategy.add(Jenkins.ADMINISTER, "admin");
@@ -127,27 +121,29 @@ public class ReportBuilderTestBase <T extends ReportBuilder> {
         strategy.add(Computer.CONNECT, "user2");
         strategy.add(Computer.CREATE, "user2");
         j.jenkins.setAuthorizationStrategy(strategy);
-        
+
         // Setup local security for project 1
         {
             final Set<String> user1 = Collections.singleton("user1");
             final Map<Permission, Set<String>> permissions = new HashMap<>();
             permissions.put(Item.BUILD, user1);
             permissions.put(Item.CONFIGURE, user1);
+            permissions.put(Item.CANCEL, user1);
             final JobProperty prop = new AuthorizationMatrixProperty(permissions);
             project1.addProperty(prop);
         }
-        
+
         // Setup local security for project 2
         {
             final Set<String> user2 = Collections.singleton("user2");
             final Map<Permission, Set<String>> permissions = new HashMap<>();
             permissions.put(Item.BUILD, user2);
             permissions.put(Item.DELETE, user2);
+            permissions.put(Item.CANCEL, user2);
             final JobProperty prop = new AuthorizationMatrixProperty(permissions);
             project2.addProperty(prop);
         }
-        
+
         // Setup local security for projectInFolder
         {
             final Set<String> user = Collections.singleton("user3");

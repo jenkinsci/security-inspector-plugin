@@ -23,9 +23,10 @@
  */
 package org.jenkinsci.plugins.securityinspector.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import hudson.security.Permission;
 import javax.annotation.Nonnull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
 
@@ -37,28 +38,29 @@ import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
 public class PermissionReportAssert {
 
     public static <TRow> void assertHasPermissions(
-            @Nonnull PermissionReport<TRow, Boolean> report, @Nonnull TRow row,
-            @Nonnull Permission ... permissions) {
+            @Nonnull PermissionReport<TRow, Boolean> report, @Nonnull TRow row, @Nonnull Permission... permissions) {
         for (Permission permission : permissions) {
             assertPermissionValue(report, row, permission, true);
         }
     }
-    
+
     public static <TRow> void assertHasNotPermissions(
-            @Nonnull PermissionReport<TRow, Boolean> report, @Nonnull TRow row,
-            @Nonnull Permission ... permissions) {
+            @Nonnull PermissionReport<TRow, Boolean> report, @Nonnull TRow row, @Nonnull Permission... permissions) {
         for (Permission permission : permissions) {
             assertPermissionValue(report, row, permission, false);
         }
     }
-    
+
     public static <TRow, TEntryReport> void assertPermissionValue(
-            @Nonnull PermissionReport<TRow, TEntryReport> report, @Nonnull TRow row,
-            @Nonnull Permission permission, @Nonnull TEntryReport expectedValue) {
-        
+            @Nonnull PermissionReport<TRow, TEntryReport> report,
+            @Nonnull TRow row,
+            @Nonnull Permission permission,
+            @Nonnull TEntryReport expectedValue) {
+
         final TEntryReport entryReport = report.getEntry(row, permission);
-        assertThat("Wrong value for " + report.getRowTitle(row) + "=" + row + " and permission=" + permission.getId(), 
-                entryReport, Matchers.equalTo(expectedValue));
-        
+        assertThat(
+                "Wrong value for " + report.getRowTitle(row) + "=" + row + " and permission=" + permission.getId(),
+                entryReport,
+                Matchers.equalTo(expectedValue));
     }
 }

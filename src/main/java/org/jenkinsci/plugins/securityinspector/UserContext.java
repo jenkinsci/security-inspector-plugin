@@ -31,21 +31,24 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(Beta.class)
 public class UserContext {
 
     @CheckForNull
     private final List<TopLevelItem> selectedJobs;
+
     @CheckForNull
     private final List<Computer> selectedSlaves;
+
     @CheckForNull
     private final List<User> selectedUsers;
+
     @Nonnull
     private final String item;
 
-    public UserContext(List<TopLevelItem> selectedJobs, 
+    public UserContext(
+            List<TopLevelItem> selectedJobs,
             List<Computer> selectedSlaves,
             List<User> selectedUsers,
             @Nonnull String item) {
