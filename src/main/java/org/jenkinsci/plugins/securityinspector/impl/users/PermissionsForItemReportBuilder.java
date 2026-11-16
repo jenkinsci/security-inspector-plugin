@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import hudson.Extension;
 import hudson.model.AllView;
 import hudson.model.Computer;
@@ -47,7 +49,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.jenkinsci.plugins.securityinspector.Messages;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
@@ -95,7 +96,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         }
         final String selectedItem = req.getParameter("selectedUser");
         JobFilter filters = new JobFilter(req);
-        
+
         // TODO: Ideally the plugin should not depend on the AllView existense
         final AllView sourceView = getAllView();
         if (sourceView == null) {
@@ -106,7 +107,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         UserContextCache.updateSearchCache(selectedJobs, null, null, selectedItem);
     }
 
-    //TODO: fix rawtype before the release
+    // TODO: fix rawtype before the release
     @Override
     public SecurityInspectorReport getReport() {
         Set<TopLevelItem> items = getRequestedJobs();
@@ -121,7 +122,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
             return new ReportImpl(user);
         }
 
-        //TODO: rework the logic to guarantee that report is initialized
+        // TODO: rework the logic to guarantee that report is initialized
         SecurityContext initialContext = null;
         try {
             initialContext = hudson.security.ACL.impersonate(auth);
@@ -154,7 +155,7 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
     public Set<TopLevelItem> getRequestedJobs() throws HttpResponses.HttpResponseException {
         final UserContext context = UserContextCache.getInstance().get(getSessionId());
         if (context == null) {
-            // TODO: 
+            // TODO:
             throw HttpResponses.error(404, "Context has not been found");
         }
 
@@ -177,25 +178,26 @@ public class PermissionsForItemReportBuilder extends UserReportBuilder {
         @Nonnull
         final User user4report;
 
-        /**package*/ ReportImpl(@Nonnull User user) {
+        /**package*/
+        ReportImpl(@Nonnull User user) {
             this.user4report = user;
         }
-        
+
         @Override
         public String getReportTargetName() {
             return user4report.getDisplayName();
         }
-        
+
         @Override
         protected Boolean getEntryReport(TopLevelItem column, Permission item) {
-            
+
             final Authentication auth;
             try {
                 auth = user4report.impersonate();
             } catch (UsernameNotFoundException ex) {
                 return Boolean.FALSE;
             }
-            
+
             SecurityContext initialContext = null;
             Item i = JenkinsHelper.getInstanceOrFail().getItemByFullName(column.getFullName());
             if (i == null) {

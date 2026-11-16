@@ -27,6 +27,7 @@ import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.model.User;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -102,7 +103,7 @@ public class UserFilter {
 
         List<User> items = new ArrayList<>(names.size());
         for (String n : names) {
-            User item = User.get(n, false, null);
+            User item = User.get(n, false, Collections.emptyMap());
             if (item != null) {
                 items.add(item);
             }

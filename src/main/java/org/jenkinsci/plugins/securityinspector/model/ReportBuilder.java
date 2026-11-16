@@ -67,11 +67,11 @@ public abstract class ReportBuilder implements ExtensionPoint {
 
     @Nonnull
     public abstract String getDescription();
-    
+
     @Nonnull
     @Restricted(NoExternalUse.class)
     public abstract SecurityInspectorReport getReport();
-    
+
     @Nonnull
     public static ExtensionList<ReportBuilder> all() {
         return ExtensionList.lookup(ReportBuilder.class);
@@ -94,8 +94,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
 
     @Nonnull
     @Restricted(NoExternalUse.class)
-    public HttpResponse doFilterSubmit(@Nonnull StaplerRequest req)
-            throws ServletException, Descriptor.FormException {
+    public HttpResponse doFilterSubmit(@Nonnull StaplerRequest req) throws ServletException, Descriptor.FormException {
 
         final Jenkins jenkins = JenkinsHelper.getInstanceOrFail();
         jenkins.checkPermission(Jenkins.ADMINISTER);
@@ -116,7 +115,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
         // Redirect to the search report page
         return HttpResponses.redirectTo("report");
     }
-    
+
     @Restricted(NoExternalUse.class)
     public void doProcessReportAction(@Nonnull StaplerRequest req, @Nonnull StaplerResponse rsp)
             throws ServletException, Descriptor.FormException, IOException {
@@ -140,13 +139,12 @@ public abstract class ReportBuilder implements ExtensionPoint {
     }
 
     /**
-     * Buttons: 
-     * - Submit report 
+     * Buttons:
+     * - Submit report
      * - Go to Home Page (for report and for configure report pages)
      * - Download report
      */
     private enum SubmittedOperation {
-
         Submit,
         Back,
         GoHome,
@@ -161,8 +159,7 @@ public abstract class ReportBuilder implements ExtensionPoint {
          * the enum
          */
         @Nonnull
-        static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) 
-                throws Descriptor.FormException {
+        static SubmittedOperation fromRequest(@Nonnull StaplerRequest req) throws Descriptor.FormException {
             final Map<?, ?> map = req.getParameterMap();
             for (SubmittedOperation val : SubmittedOperation.values()) {
                 if (map.containsKey(val.toString())) {
@@ -174,25 +171,26 @@ public abstract class ReportBuilder implements ExtensionPoint {
     }
 
     public static enum Type {
-
         ITEM,
         USER,
         COMPUTER
     }
-    
+
     private void doDownloadReport(@Nonnull StaplerResponse rsp) {
-        
+
         SecurityInspectorReport report4Download = getReport();
-        
+
         rsp.setCharacterEncoding("UTF_8");
         rsp.setContentType("text/csv;charset=UTF-8");
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         f.setTimeZone(TimeZone.getTimeZone("UTC"));
-        rsp.setHeader("Content-Disposition", "attachment; "
-                + "filename=\"report-for-"
-                +report4Download.getReportTargetName()
-                +"-" + f.format(new Date()) + ".csv\"");
-        
+        rsp.setHeader(
+                "Content-Disposition",
+                "attachment; "
+                        + "filename=\"report-for-"
+                        + report4Download.getReportTargetName()
+                        + "-" + f.format(new Date()) + ".csv\"");
+
         try (OutputStream outputStream = rsp.getOutputStream()) {
             String report = report4Download.getReportInCSV();
             outputStream.write(report.getBytes(StandardCharsets.UTF_8));
@@ -201,6 +199,5 @@ public abstract class ReportBuilder implements ExtensionPoint {
         } catch (Exception e) {
             System.out.println(e.toString());
         }
-        
     }
 }

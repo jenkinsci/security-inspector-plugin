@@ -23,30 +23,33 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.items;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.Item;
 import hudson.model.User;
 import java.util.HashSet;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
+
 /**
  * Tests of {@link ItemForMultipleUsersReportBuilder}.
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
 public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase<ItemForMultipleUsersReportBuilder> {
-    
+
     public ItemForMultipleUsersReportBuilderTest() {
         super(ItemForMultipleUsersReportBuilder.class);
     }
-    
+
     @Test
     public void shouldReportProject1Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
-        
-        final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
+
+        final ItemForMultipleUsersReportBuilder.ReportImpl report =
+                new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
         assertNotNull(report);
         assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
@@ -54,36 +57,55 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
             users.add(user);
         }
         report.generateReport(users);
-        
+
         // Check entries
-        PermissionReportAssert.assertHasPermissions(report, User.get("admin"), 
-                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.DISCOVER, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), 
-                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user1"), 
-                Item.CREATE, Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user2"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);  
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
+        PermissionReportAssert.assertHasPermissions(
+                report,
+                User.get("admin"),
+                Item.READ,
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.DISCOVER,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(
+                report, User.get("user1"), Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report, User.get("user1"), Item.CREATE, Item.DELETE, Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user2"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user3"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
     }
-    
+
     @Test
     public void shouldReportProject2Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
-        
-        final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project2"));
+
+        final ItemForMultipleUsersReportBuilder.ReportImpl report =
+                new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project2"));
         assertNotNull(report);
         assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
@@ -91,36 +113,55 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
             users.add(user);
         }
         report.generateReport(users);
-        
+
         // Check entries
-        PermissionReportAssert.assertHasPermissions(report, User.get("admin"), 
-                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.DISCOVER, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user1"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), 
-                Item.READ, Item.DELETE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user2"), 
-                Item.CREATE, Item.CONFIGURE, Item.WORKSPACE);
-          
-        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
+        PermissionReportAssert.assertHasPermissions(
+                report,
+                User.get("admin"),
+                Item.READ,
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.DISCOVER,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user1"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(
+                report, User.get("user2"), Item.READ, Item.DELETE, Item.BUILD, Item.CANCEL, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report, User.get("user2"), Item.CREATE, Item.CONFIGURE, Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user3"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
     }
-    
+
     @Test
     public void shouldReportFolderProperly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
-        
-        final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("folder"));
+
+        final ItemForMultipleUsersReportBuilder.ReportImpl report =
+                new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("folder"));
         assertNotNull(report);
         assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
@@ -128,37 +169,61 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
             users.add(user);
         }
         report.generateReport(users);
-        
+
         // Check entries
-        PermissionReportAssert.assertHasPermissions(report, User.get("admin"), 
-                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.DISCOVER, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user1"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user2"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
+        PermissionReportAssert.assertHasPermissions(
+                report,
+                User.get("admin"),
+                Item.READ,
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.DISCOVER,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user1"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user2"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user3"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
     }
-    
+
     @Test
     public void shouldReportProjectInFolderProperly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
-        
-        final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItemByFullName("folder/projectInFolder"));
+
+        final ItemForMultipleUsersReportBuilder.ReportImpl report =
+                new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItemByFullName("folder/projectInFolder"));
         assertNotNull(report);
         assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
@@ -166,37 +231,63 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
             users.add(user);
         }
         report.generateReport(users);
-        
+
         // Check entries
-        PermissionReportAssert.assertHasPermissions(report, User.get("admin"), 
-                Item.READ, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.DISCOVER, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user1"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), 
-                Item.READ, Item.DISCOVER);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user2"), 
-                Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, 
-                Item.DELETE, Item.WORKSPACE);
-        
-        PermissionReportAssert.assertHasPermissions(report, User.get("user3"), 
-                Item.READ, Item.DISCOVER, Item.CONFIGURE, Item.BUILD, Item.CANCEL, Item.CREATE, Item.DELETE);
-        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), 
+        PermissionReportAssert.assertHasPermissions(
+                report,
+                User.get("admin"),
+                Item.READ,
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.DISCOVER,
                 Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user1"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user1"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(report, User.get("user2"), Item.READ, Item.DISCOVER);
+        PermissionReportAssert.assertHasNotPermissions(
+                report,
+                User.get("user2"),
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE,
+                Item.WORKSPACE);
+
+        PermissionReportAssert.assertHasPermissions(
+                report,
+                User.get("user3"),
+                Item.READ,
+                Item.DISCOVER,
+                Item.CONFIGURE,
+                Item.BUILD,
+                Item.CANCEL,
+                Item.CREATE,
+                Item.DELETE);
+        PermissionReportAssert.assertHasNotPermissions(report, User.get("user3"), Item.WORKSPACE);
     }
-    
+
     @Test
     public void shouldDownloadReport4Project1() throws Exception {
-        
+
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
-        
-        final ItemForMultipleUsersReportBuilder.ReportImpl report = new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
+
+        final ItemForMultipleUsersReportBuilder.ReportImpl report =
+                new ItemForMultipleUsersReportBuilder.ReportImpl(j.jenkins.getItem("project1"));
         assertNotNull(report);
         assertNotNull(User.getAll());
         HashSet<User> users = new HashSet<>();
@@ -204,12 +295,14 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
             users.add(user);
         }
         report.generateReport(users);
-        
-        assertThat("Report target name must be equal to 'project1'", report.getReportTargetName().equals("project1")); 
+
+        assertThat(
+                "Report target name must be equal to 'project1'",
+                report.getReportTargetName().equals("project1"));
 
         String reportInCSV = report.getReportInCSV();
         assertNotNull(reportInCSV);
-        
+
         for (User user : users) {
             assertThat("CSV Report must had row " + user, reportInCSV.contains(user.getDisplayName()));
         }

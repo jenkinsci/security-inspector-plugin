@@ -23,11 +23,12 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.items;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import hudson.model.Item;
 import java.util.Comparator;
 import java.util.List;
 import javax.annotation.Nonnull;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
@@ -41,12 +42,12 @@ import org.kohsuke.stapler.HttpResponses;
  * @author Oleg Nenashev
  */
 public abstract class ItemReportBuilder extends ReportBuilder {
-   
+
     @Override
     public final Type getType() {
         return Type.ITEM;
     }
-    
+
     @Nonnull
     public List<Item> getPossibleJobs() {
         return JenkinsHelper.getInstanceOrFail().getAllItems();
@@ -61,13 +62,13 @@ public abstract class ItemReportBuilder extends ReportBuilder {
             }
         };
     }
-    
+
     @Nonnull
     @Restricted(NoExternalUse.class)
     public Item getRequestedJob() throws HttpResponses.HttpResponseException {
         UserContext context = UserContextCache.getInstance().get(getSessionId());
         if (context == null) {
-            // TODO: 
+            // TODO:
             throw HttpResponses.error(404, "Context has not been found");
         }
         String jobName = context.getItem();

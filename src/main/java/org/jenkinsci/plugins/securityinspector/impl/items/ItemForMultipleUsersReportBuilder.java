@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.items;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -44,7 +46,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.jenkinsci.plugins.securityinspector.Messages;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
@@ -96,7 +97,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         UserContextCache.updateSearchCache(null, null, selectedUsers, selectedItem);
     }
 
-    //TODO: fix rawtype before the release
+    // TODO: fix rawtype before the release
     @Override
     public SecurityInspectorReport getReport() {
         Set<User> users = getRequestedUsers();
@@ -111,7 +112,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
     public Set<User> getRequestedUsers() throws HttpResponses.HttpResponseException {
         UserContext context = UserContextCache.getInstance().get(getSessionId());
         if (context == null) {
-            // TODO: 
+            // TODO:
             throw HttpResponses.error(404, "Context has not been found");
         }
 
@@ -134,10 +135,11 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
         @Nonnull
         final Item job4report;
 
-        /**package*/ ReportImpl(@Nonnull Item job) {
+        /**package*/
+        ReportImpl(@Nonnull Item job) {
             this.job4report = job;
         }
-        
+
         @Override
         public String getReportTargetName() {
             return job4report.getDisplayName();
@@ -152,7 +154,7 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
                 fillRowByResult(user, Boolean.FALSE);
                 return;
             }
-            
+
             SecurityContext initialContext = null;
             try {
                 initialContext = hudson.security.ACL.impersonate(auth);
@@ -163,12 +165,12 @@ public class ItemForMultipleUsersReportBuilder extends ItemReportBuilder {
                 }
             }
         }
-      
+
         @Override
         protected Boolean getEntryReport(User column, Permission item) {
             return job4report.hasPermission(item);
         }
-        
+
         public final void generateReport(@Nonnull Set<User> rows) {
             Set<PermissionGroup> groups = new HashSet<>(PermissionGroup.getAll());
             groups.remove(PermissionGroup.get(Permission.class));

@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
+import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
+
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -48,7 +50,6 @@ import org.acegisecurity.context.SecurityContext;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.acegisecurity.userdetails.UsernameNotFoundException;
 import org.jenkinsci.plugins.securityinspector.Messages;
-import static org.jenkinsci.plugins.securityinspector.SecurityInspectorAction.getSessionId;
 import org.jenkinsci.plugins.securityinspector.UserContext;
 import org.jenkinsci.plugins.securityinspector.UserContextCache;
 import org.jenkinsci.plugins.securityinspector.model.PermissionReport;
@@ -125,7 +126,7 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
         return res;
     }
 
-    //TODO: Rename Slave => Node
+    // TODO: Rename Slave => Node
     @Override
     public SecurityInspectorReport getReport() {
         Set<Computer> computers = getRequestedSlaves();
@@ -171,25 +172,26 @@ public class PermissionsForComputerReportBuilder extends UserReportBuilder {
         @Nonnull
         final User user4report;
 
-        /**package*/ ReportImpl(@Nonnull User user) {
+        /**package*/
+        ReportImpl(@Nonnull User user) {
             this.user4report = user;
         }
-        
+
         @Override
         public String getReportTargetName() {
             return user4report.getDisplayName();
         }
-        
+
         @Override
         protected Boolean getEntryReport(Computer column, Permission item) {
-            
+
             final Authentication auth;
             try {
                 auth = user4report.impersonate();
             } catch (UsernameNotFoundException ex) {
                 return Boolean.FALSE;
             }
-            
+
             SecurityContext initialContext = null;
             AuthorizationStrategy strategy = JenkinsHelper.getInstanceOrFail().getAuthorizationStrategy();
             try {
