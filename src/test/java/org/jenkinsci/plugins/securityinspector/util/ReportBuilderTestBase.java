@@ -45,24 +45,30 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.securityinspector.model.ReportBuilder;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Base class for testing {@link ReportBuilder}s.
  * @param <T> Class of the report builder to be tested
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
+@WithJenkins
 public class ReportBuilderTestBase<T extends ReportBuilder> {
 
-    @Rule
-    public final JenkinsRule j = new JenkinsRule();
+    protected JenkinsRule j;
 
     private final Class<T> myClass;
 
     public ReportBuilderTestBase(Class<T> myClass) {
         this.myClass = myClass;
+    }
+
+    @BeforeEach
+    protected void beforeEach(JenkinsRule rule) {
+        j = rule;
     }
 
     @Nonnull
@@ -79,7 +85,7 @@ public class ReportBuilderTestBase<T extends ReportBuilder> {
     }
 
     @Test
-    public void shouldOfferTheReportInUI() throws Exception {
+    void shouldOfferTheReportInUI() throws Exception {
         final T builder = getBuilder();
         final JenkinsRule.WebClient wc = j.createWebClient();
         final String rootPageStr = wc.goTo("security-inspector").getBody().asNormalizedText();

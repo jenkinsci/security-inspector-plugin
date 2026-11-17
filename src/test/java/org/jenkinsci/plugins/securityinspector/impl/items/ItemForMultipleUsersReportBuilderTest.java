@@ -24,27 +24,27 @@
 package org.jenkinsci.plugins.securityinspector.impl.items;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.Item;
 import hudson.model.User;
 import java.util.HashSet;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link ItemForMultipleUsersReportBuilder}.
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
-public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase<ItemForMultipleUsersReportBuilder> {
+class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase<ItemForMultipleUsersReportBuilder> {
 
     public ItemForMultipleUsersReportBuilderTest() {
         super(ItemForMultipleUsersReportBuilder.class);
     }
 
     @Test
-    public void shouldReportProject1Properly() throws Exception {
+    void shouldReportProject1Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
 
@@ -100,7 +100,7 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
     }
 
     @Test
-    public void shouldReportProject2Properly() throws Exception {
+    void shouldReportProject2Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
 
@@ -156,7 +156,7 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
     }
 
     @Test
-    public void shouldReportFolderProperly() throws Exception {
+    void shouldReportFolderProperly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
 
@@ -218,7 +218,7 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
     }
 
     @Test
-    public void shouldReportProjectInFolderProperly() throws Exception {
+    void shouldReportProjectInFolderProperly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
 
@@ -281,7 +281,7 @@ public class ItemForMultipleUsersReportBuilderTest extends ReportBuilderTestBase
     }
 
     @Test
-    public void shouldDownloadReport4Project1() throws Exception {
+    void shouldDownloadReport4Project1() throws Exception {
 
         initializeDefaultMatrixAuthSecurity();
         final ItemForMultipleUsersReportBuilder builder = getBuilder();
