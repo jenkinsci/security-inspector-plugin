@@ -24,7 +24,7 @@
 package org.jenkinsci.plugins.securityinspector.impl.users;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
@@ -32,20 +32,20 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jenkinsci.plugins.securityinspector.util.PermissionReportAssert;
 import org.jenkinsci.plugins.securityinspector.util.ReportBuilderTestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link PermissionsForItemReportBuilder}.
  * @author Ksenia Nenasheva <ks.nenasheva@gmail.com>
  */
-public class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<PermissionsForItemReportBuilder> {
+class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<PermissionsForItemReportBuilder> {
 
     public PermissionsForItemReportBuilderTest() {
         super(PermissionsForItemReportBuilder.class);
     }
 
     @Test
-    public void shouldReportAdminProperly() throws Exception {
+    void shouldReportAdminProperly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
 
@@ -106,7 +106,7 @@ public class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<P
     }
 
     @Test
-    public void shouldReportUser1Properly() throws Exception {
+    void shouldReportUser1Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
 
@@ -167,7 +167,7 @@ public class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<P
     }
 
     @Test
-    public void shouldReportUser2Properly() throws Exception {
+    void shouldReportUser2Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
 
@@ -222,7 +222,7 @@ public class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<P
     }
 
     @Test
-    public void shouldReportUser3Properly() throws Exception {
+    void shouldReportUser3Properly() throws Exception {
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
 
@@ -281,7 +281,7 @@ public class PermissionsForItemReportBuilderTest extends ReportBuilderTestBase<P
     }
 
     @Test
-    public void shouldDownloadReport4Admin() throws Exception {
+    void shouldDownloadReport4Admin() throws Exception {
 
         initializeDefaultMatrixAuthSecurity();
         final PermissionsForItemReportBuilder builder = getBuilder();
